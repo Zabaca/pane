@@ -10,6 +10,7 @@ export interface AvailableAction {
 export interface StateData {
   currentState: string;
   text: string;
+  contentType: 'text' | 'markdown';
   historyCount: number;
   lastAction: string | null;
   lastError: string | null;
@@ -27,6 +28,7 @@ export function useWebSocket(url: string = 'ws://localhost:8765') {
   const state = ref<StateData>({
     currentState: 'idle',
     text: '',
+    contentType: 'text',
     historyCount: 0,
     lastAction: null,
     lastError: null,

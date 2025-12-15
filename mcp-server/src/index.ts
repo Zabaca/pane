@@ -20,6 +20,7 @@ const APP_INFO = {
   capabilities: [
     'Display text on screen',
     'Set text to any value',
+    'Set markdown content with Mermaid diagram support',
     'Append text to existing content',
     'Clear all text',
     'Undo changes (with history)',
@@ -72,11 +73,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           properties: {
             action: {
               type: 'string',
-              description: 'The action name (e.g., set_text, append_text, clear_text, undo, reset)',
+              description: 'The action name (e.g., set_text, set_markdown, append_text, clear_text, undo, reset)',
             },
             payload: {
               type: 'object',
-              description: 'Action payload - for set_text/append_text, include { text: "your text" }',
+              description: 'Action payload - for set_text/append_text use { text: "..." }, for set_markdown use { markdown: "..." }',
             },
           },
           required: ['action'],
@@ -116,6 +117,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               {
                 currentState: state,
                 text: context.text,
+                contentType: context.contentType,
                 textLength: context.text.length,
                 historyCount: context.history.length,
                 lastAction: context.lastAction,
@@ -143,6 +145,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             };
           }
           event = { type: 'SET_TEXT', text: String(payload.text) };
+          break;
+        case 'set_markdown':
+          if (!payload?.markdown) {
+            return {
+              content: [{ type: 'text', text: JSON.stringify({ success: false, error: 'set_markdown requires a "markdown" field in payload' }) }],
+            };
+          }
+          event = { type: 'SET_MARKDOWN', markdown: String(payload.markdown) };
           break;
         case 'append_text':
           if (!payload?.text) {
@@ -184,6 +194,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       broadcastState({
         currentState: newState,
         text: newContext.text,
+        contentType: newContext.contentType,
         historyCount: newContext.history.length,
         lastAction: newContext.lastAction,
         lastError: newContext.lastError,

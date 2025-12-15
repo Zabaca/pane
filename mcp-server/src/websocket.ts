@@ -7,6 +7,7 @@ const clients = new Set<WebSocket>();
 export interface StateUpdate {
   currentState: string;
   text: string;
+  contentType: 'text' | 'markdown';
   historyCount: number;
   lastAction: string | null;
   lastError: string | null;
@@ -30,6 +31,7 @@ export function startWebSocketServer(port: number) {
         data: {
           currentState: state,
           text: context.text,
+          contentType: context.contentType,
           historyCount: context.history.length,
           lastAction: context.lastAction,
           lastError: context.lastError,

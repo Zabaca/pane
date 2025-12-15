@@ -4,7 +4,7 @@ import TextDisplay from './components/TextDisplay.vue';
 import StateIndicator from './components/StateIndicator.vue';
 import ActionLog from './components/ActionLog.vue';
 
-const { connected, state, actionLog, error } = useWebSocket();
+const { connected, state, actionLog } = useWebSocket();
 </script>
 
 <template>
@@ -18,7 +18,7 @@ const { connected, state, actionLog, error } = useWebSocket();
 
     <main class="main">
       <div class="display-section">
-        <TextDisplay :text="state.text" :state="state.currentState" />
+        <TextDisplay :text="state.text" :state="state.currentState" :content-type="state.contentType" />
       </div>
 
       <div class="info-section">
