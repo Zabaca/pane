@@ -2,6 +2,8 @@
 
 A prototype demonstrating AI-controllable UI architecture with state machines.
 
+![Demo](assets/agentic-ui-demo.gif)
+
 ## Architecture
 
 ```
