@@ -41,7 +41,7 @@ Add to your Claude Code MCP settings (`~/.claude.json` or project settings):
   "mcpServers": {
     "agentic-ui": {
       "command": "bun",
-      "args": ["run", "/path/to/packages/agentic-ui-prototype/mcp-server/src/index.ts"]
+      "args": ["run", "/Users/james/Projects/uptownhr/research/packages/mcp-agentic-ui/mcp-server/src/index.ts"]
     }
   }
 }

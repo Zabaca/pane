@@ -1,5 +1,5 @@
 import { WebSocketServer, WebSocket } from 'ws';
-import { getSnapshot, getAvailableActions } from './machine.js';
+import { getSnapshot, getAvailableActions, sendEvent, type InputRequest, type InputStatus, type TextMachineEvent } from './machine.js';
 
 let wss: WebSocketServer | null = null;
 const clients = new Set<WebSocket>();
@@ -7,9 +7,22 @@ const clients = new Set<WebSocket>();
 export interface StateUpdate {
   currentState: string;
   text: string;
+  contentType: 'text' | 'markdown';
   historyCount: number;
   lastAction: string | null;
   lastError: string | null;
+  inputRequest: InputRequest | null;
+  inputStatus: InputStatus;
+  userInput: string | null;
+}
+
+// Incoming message types from frontend
+export interface IncomingMessage {
+  type: 'submit_input' | 'cancel_input';
+  payload: {
+    requestId: string;
+    value?: string;
+  };
 }
 
 export function startWebSocketServer(port: number) {
@@ -30,13 +43,27 @@ export function startWebSocketServer(port: number) {
         data: {
           currentState: state,
           text: context.text,
+          contentType: context.contentType,
           historyCount: context.history.length,
           lastAction: context.lastAction,
           lastError: context.lastError,
+          inputRequest: context.inputRequest,
+          inputStatus: context.inputStatus,
+          userInput: context.userInput,
           availableActions: getAvailableActions(state, context),
         },
       })
     );
+
+    // Handle incoming messages from frontend
+    ws.on('message', (data) => {
+      try {
+        const message: IncomingMessage = JSON.parse(data.toString());
+        handleIncomingMessage(message);
+      } catch (error) {
+        console.error('Failed to parse incoming message:', error);
+      }
+    });
 
     ws.on('close', () => {
       clients.delete(ws);
@@ -75,6 +102,48 @@ export function broadcastState(update: StateUpdate) {
 
 export function getClientCount() {
   return clients.size;
+}
+
+// Handle incoming messages from frontend
+function handleIncomingMessage(message: IncomingMessage) {
+  let event: TextMachineEvent;
+
+  switch (message.type) {
+    case 'submit_input':
+      event = {
+        type: 'SUBMIT_INPUT',
+        value: message.payload.value || '',
+        requestId: message.payload.requestId,
+      };
+      break;
+    case 'cancel_input':
+      event = {
+        type: 'CANCEL_INPUT',
+        requestId: message.payload.requestId,
+      };
+      break;
+    default:
+      console.error('Unknown message type:', message.type);
+      return;
+  }
+
+  // Send event to state machine
+  const newSnapshot = sendEvent(event);
+  const newState = String(newSnapshot.value);
+  const newContext = newSnapshot.context;
+
+  // Broadcast updated state to all clients
+  broadcastState({
+    currentState: newState,
+    text: newContext.text,
+    contentType: newContext.contentType,
+    historyCount: newContext.history.length,
+    lastAction: newContext.lastAction,
+    lastError: newContext.lastError,
+    inputRequest: newContext.inputRequest,
+    inputStatus: newContext.inputStatus,
+    userInput: newContext.userInput,
+  });
 }
 
 export function closeWebSocketServer(): Promise<void> {
