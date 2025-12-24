@@ -4,6 +4,7 @@ import TextDisplay from './components/TextDisplay.vue';
 import StateIndicator from './components/StateIndicator.vue';
 import ActionLog from './components/ActionLog.vue';
 import InputForm from './components/InputForm.vue';
+import UserContext from './components/UserContext.vue';
 
 const { connected, state, actionLog, submitInput, cancelInput } = useWebSocket();
 </script>
@@ -36,6 +37,7 @@ const { connected, state, actionLog, submitInput, cancelInput } = useWebSocket()
       </div>
 
       <div class="info-section">
+        <UserContext :user-context="state.userContext" />
         <StateIndicator
           :current-state="state.currentState"
           :history-count="state.historyCount"

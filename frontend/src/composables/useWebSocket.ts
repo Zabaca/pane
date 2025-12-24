@@ -28,6 +28,7 @@ export interface StateData {
   inputRequest: InputRequest | null;
   inputStatus: InputStatus;
   userInput: string | null;
+  userContext: Record<string, unknown>;
 }
 
 export interface ActionLogEntry {
@@ -85,6 +86,7 @@ export function useWebSocket(url: string = 'ws://localhost:8765') {
     inputRequest: null,
     inputStatus: 'idle',
     userInput: null,
+    userContext: {},
   });
   const actionLog = ref<ActionLogEntry[]>([]);
   const error = ref<string | null>(null);

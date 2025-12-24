@@ -97,6 +97,44 @@ This would allow Claude to present information AND gather feedback in a single v
 
 ---
 
+### Issue #5: No State Persistence
+**Status:** Active - Needs Enhancement
+**Priority:** High
+**Description:** All state (userContext, text, history) is stored in memory only. When the MCP server restarts (e.g., `/mcp` reconnect), all data is lost.
+
+**Current Behavior:**
+```typescript
+// machine.ts - In-memory singleton
+let actorInstance: AnyActorRef | null = null;
+```
+
+On server restart:
+- ❌ `userContext` reset to `{}`
+- ❌ `text` reset to `''`
+- ❌ `history` reset to `[]`
+- ❌ All collected user data lost
+
+**Desired Behavior:** State persists across server restarts.
+
+**Potential Solutions:**
+1. **File-based persistence** - Save state to JSON file on changes, load on startup
+2. **SQLite** - Lightweight database for structured storage
+3. **Redis** - If scaling needed (overkill for single-user)
+4. **Browser localStorage** - Frontend persists and syncs back to server
+
+**Recommended:** File-based JSON persistence (simplest, sufficient for single-user MCP)
+
+```typescript
+// On state change
+fs.writeFileSync('.agentic-ui-state.json', JSON.stringify(context));
+
+// On startup
+const saved = fs.readFileSync('.agentic-ui-state.json');
+initialContext = JSON.parse(saved);
+```
+
+---
+
 ## Notes
 
 - All communication with user now happening through Agentic UI canvas
@@ -105,6 +143,7 @@ This would allow Claude to present information AND gather feedback in a single v
 ## Implementation Priority
 
 1. ~~**Issue #1** - User context with keyed storage~~ ✅ DONE
-2. **Issue #2** - Multi-field forms
-3. **Issue #3** - Combined display + input
-4. **Issue #4** - Auto-trigger (requires workaround research)
+2. **Issue #5** - State persistence (HIGH - prevents data loss)
+3. **Issue #2** - Multi-field forms
+4. **Issue #3** - Combined display + input
+5. **Issue #4** - Auto-trigger (requires workaround research)
