@@ -98,40 +98,41 @@ This allows Claude to present information AND gather feedback in a single unifie
 ---
 
 ### Issue #5: No State Persistence
-**Status:** Active - Needs Enhancement
+**Status:** ✅ RESOLVED (2025-12-24)
 **Priority:** High
 **Description:** All state (userContext, text, history) is stored in memory only. When the MCP server restarts (e.g., `/mcp` reconnect), all data is lost.
 
-**Current Behavior:**
+**Solution Implemented:** File-based JSON persistence with Option B (full state restoration)
+
+**Implementation Details:**
+- State file: `.agentic-ui-state.json` in mcp-server directory
+- Uses `import.meta.url` for ESM-compatible path resolution
+- Persists on every state change via XState subscription
+
+**Persisted State (Option B):**
 ```typescript
-// machine.ts - In-memory singleton
-let actorInstance: AnyActorRef | null = null;
+interface PersistedState {
+  text: string;
+  contentType: 'text' | 'markdown';
+  history: HistoryEntry[];
+  userContext: Record<string, unknown>;
+  inputRequest: InputRequest | null;  // Full input form state
+  inputStatus: InputStatus;            // pending/submitted/etc.
+}
 ```
 
-On server restart:
-- ❌ `userContext` reset to `{}`
-- ❌ `text` reset to `''`
-- ❌ `history` reset to `[]`
-- ❌ All collected user data lost
+**On Restore:**
+1. Load all state including `inputRequest`
+2. If `inputRequest` exists → start in `waitingForInput` state
+3. Generate new `requestId` (old one is stale)
+4. User sees content + input form, can continue exactly where left off
 
-**Desired Behavior:** State persists across server restarts.
-
-**Potential Solutions:**
-1. **File-based persistence** - Save state to JSON file on changes, load on startup
-2. **SQLite** - Lightweight database for structured storage
-3. **Redis** - If scaling needed (overkill for single-user)
-4. **Browser localStorage** - Frontend persists and syncs back to server
-
-**Recommended:** File-based JSON persistence (simplest, sufficient for single-user MCP)
-
-```typescript
-// On state change
-fs.writeFileSync('.agentic-ui-state.json', JSON.stringify(context));
-
-// On startup
-const saved = fs.readFileSync('.agentic-ui-state.json');
-initialContext = JSON.parse(saved);
-```
+**Result:**
+- ✅ `userContext` persists
+- ✅ `text` persists
+- ✅ `history` persists
+- ✅ `inputRequest` persists (Option B)
+- ✅ Full state restoration across MCP restarts
 
 ---
 
@@ -144,6 +145,6 @@ initialContext = JSON.parse(saved);
 
 1. ~~**Issue #1** - User context with keyed storage~~ ✅ DONE
 2. ~~**Issue #3** - Combined display + input~~ ✅ DONE
-3. **Issue #5** - State persistence (HIGH - prevents data loss)
+3. ~~**Issue #5** - State persistence (Option B - full restoration)~~ ✅ DONE
 4. **Issue #2** - Multi-field forms
 5. **Issue #4** - Auto-trigger (requires workaround research)

@@ -1,4 +1,20 @@
 import { createMachine, assign, createActor, type AnyActorRef } from 'xstate';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+
+// State persistence file path - use __dirname to ensure it's relative to this file
+const STATE_FILE = path.join(path.dirname(new URL(import.meta.url).pathname), '..', '.agentic-ui-state.json');
+
+// Persisted state shape (Option B - full state restoration including pending input)
+interface PersistedState {
+  text: string;
+  contentType: 'text' | 'markdown';
+  history: HistoryEntry[];
+  userContext: Record<string, unknown>;
+  // Option B: Also persist input request for full state restoration
+  inputRequest: InputRequest | null;
+  inputStatus: InputStatus;
+}
 
 // History entry type - stores both text and contentType for proper undo
 export interface HistoryEntry {
@@ -360,12 +376,118 @@ export function getAvailableActions(
   return actions;
 }
 
+// ============================================
+// State Persistence Functions
+// ============================================
+
+// Load persisted state from file
+function loadPersistedState(): Partial<TextMachineContext> | null {
+  try {
+    if (fs.existsSync(STATE_FILE)) {
+      const data = fs.readFileSync(STATE_FILE, 'utf-8');
+      const parsed = JSON.parse(data) as PersistedState;
+      console.error(`[Persistence] Loaded state from ${STATE_FILE}`);
+
+      // Option B: Restore inputRequest with a fresh requestId
+      let inputRequest = parsed.inputRequest || null;
+      if (inputRequest) {
+        // Generate new requestId since old one is stale
+        inputRequest = {
+          ...inputRequest,
+          requestId: `restored-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        };
+        console.error('[Persistence] Restored pending input request with new ID:', inputRequest.requestId);
+      }
+
+      return {
+        text: parsed.text || '',
+        contentType: parsed.contentType || 'text',
+        history: parsed.history || [],
+        userContext: parsed.userContext || {},
+        inputRequest,
+        inputStatus: inputRequest ? 'pending' : (parsed.inputStatus || 'idle'),
+      };
+    }
+  } catch (error) {
+    console.error('[Persistence] Failed to load state:', error);
+  }
+  return null;
+}
+
+// Save state to file
+function saveState(context: TextMachineContext): void {
+  try {
+    const toSave: PersistedState = {
+      text: context.text,
+      contentType: context.contentType,
+      history: context.history,
+      userContext: context.userContext,
+      // Option B: Also save input request for full state restoration
+      inputRequest: context.inputRequest,
+      inputStatus: context.inputStatus,
+    };
+    fs.writeFileSync(STATE_FILE, JSON.stringify(toSave, null, 2));
+    console.error(`[Persistence] State saved to ${STATE_FILE}`);
+  } catch (error) {
+    console.error('[Persistence] Failed to save state:', error);
+  }
+}
+
+// ============================================
+// Actor Instance Management
+// ============================================
+
 // Singleton actor instance
 let actorInstance: AnyActorRef | null = null;
 
 export function getActor() {
   if (!actorInstance) {
-    actorInstance = createActor(textMachine);
+    // Try to load persisted state
+    const persistedState = loadPersistedState();
+
+    if (persistedState) {
+      // Create machine with persisted context
+      const restoredContext: TextMachineContext = {
+        ...initialContext,
+        text: persistedState.text || '',
+        contentType: persistedState.contentType || 'text',
+        history: persistedState.history || [],
+        userContext: persistedState.userContext || {},
+        // Option B: Restore input request state
+        inputRequest: persistedState.inputRequest || null,
+        inputStatus: persistedState.inputStatus || 'idle',
+        userInput: null,
+      };
+
+      // Determine initial state based on content and pending input
+      let initialState: string;
+      if (restoredContext.inputRequest) {
+        // Option B: If there's a pending input request, restore to waitingForInput
+        initialState = 'waitingForInput';
+        console.error('[Persistence] Restoring to waitingForInput state');
+      } else if (restoredContext.text) {
+        initialState = 'displaying';
+      } else {
+        initialState = 'idle';
+      }
+
+      // Create a machine starting in the correct state with restored context
+      const restoredMachine = createMachine({
+        ...textMachine.config,
+        initial: initialState,
+        context: restoredContext,
+      });
+
+      actorInstance = createActor(restoredMachine);
+    } else {
+      actorInstance = createActor(textMachine);
+    }
+
+    // Subscribe to state changes and persist
+    actorInstance.subscribe((snapshot) => {
+      saveState(snapshot.context);
+    });
+
     actorInstance.start();
   }
   return actorInstance;
