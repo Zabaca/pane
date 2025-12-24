@@ -9,8 +9,11 @@ import {
   getSnapshot,
   sendEvent,
   getAvailableActions,
+  isMultiFieldRequest,
   type TextMachineEvent,
   type InputRequest,
+  type MultiFieldRequest,
+  type FormField,
 } from './machine.js';
 import { startWebSocketServer, broadcastState, closeWebSocketServer, isPortInUse } from './websocket.js';
 
@@ -161,6 +164,59 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: 'object',
           properties: {},
+        },
+      },
+      {
+        name: 'show_multi_form',
+        description: 'Display a multi-field form to collect multiple inputs at once. All field values are stored in userContext using field keys. Use get_user_input to retrieve submitted values.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            content: {
+              type: 'string',
+              description: 'Optional markdown content to display above the form.',
+            },
+            fields: {
+              type: 'array',
+              description: 'Array of form fields to display',
+              items: {
+                type: 'object',
+                properties: {
+                  key: {
+                    type: 'string',
+                    description: 'Unique identifier for the field. Value will be stored in userContext[key].',
+                  },
+                  label: {
+                    type: 'string',
+                    description: 'Display label for the field',
+                  },
+                  type: {
+                    type: 'string',
+                    enum: ['text', 'textarea', 'number', 'checkbox', 'select'],
+                    description: 'Type of input field',
+                  },
+                  placeholder: {
+                    type: 'string',
+                    description: 'Placeholder text for text inputs',
+                  },
+                  defaultValue: {
+                    description: 'Default value for the field',
+                  },
+                  required: {
+                    type: 'boolean',
+                    description: 'Whether the field is required',
+                  },
+                  options: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Options for select fields',
+                  },
+                },
+                required: ['key', 'label', 'type'],
+              },
+            },
+          },
+          required: ['fields'],
         },
       },
     ],
@@ -376,6 +432,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       // Check current input status
       if (state === 'waitingForInput') {
+        const isMultiField = isMultiFieldRequest(context.inputRequest);
         return {
           content: [
             {
@@ -383,7 +440,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               text: JSON.stringify({
                 status: 'pending',
                 message: 'User has not yet submitted their input. Try again later.',
-                prompt: context.inputRequest?.prompt,
+                isMultiField,
+                prompt: isMultiField ? undefined : (context.inputRequest as InputRequest)?.prompt,
+                fieldCount: isMultiField ? (context.inputRequest as MultiFieldRequest)?.fields.length : undefined,
                 requestId: context.inputRequest?.requestId,
               }),
             },
@@ -392,6 +451,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       if (context.inputStatus === 'submitted') {
+        // Check if this was a multi-field submission
+        if (context.multiFieldInput) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify({
+                  status: 'submitted',
+                  values: context.multiFieldInput,
+                  message: 'User submitted multi-field form successfully.',
+                }),
+              },
+            ],
+          };
+        }
+        // Single-field submission
         return {
           content: [
             {
@@ -429,7 +504,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             text: JSON.stringify({
               status: 'idle',
               value: null,
-              message: 'No input has been requested. Use show_input_form first.',
+              message: 'No input has been requested. Use show_input_form or show_multi_form first.',
             }),
           },
         ],
@@ -520,6 +595,57 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               success: true,
               userContext: {},
               message: 'User context has been cleared.',
+            }),
+          },
+        ],
+      };
+    }
+
+    case 'show_multi_form': {
+      const { content, fields } = args as {
+        content?: string;
+        fields: FormField[];
+      };
+
+      // Generate unique request ID
+      const requestId = `multi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      const request: MultiFieldRequest = {
+        fields,
+        content,
+        requestId,
+      };
+
+      const event: TextMachineEvent = { type: 'SHOW_MULTI_FORM', request };
+      const newSnapshot = sendEvent(event);
+      const newState = String(newSnapshot.value);
+      const newContext = newSnapshot.context;
+
+      // Broadcast to WebSocket clients
+      broadcastState({
+        currentState: newState,
+        text: newContext.text,
+        contentType: newContext.contentType,
+        historyCount: newContext.history.length,
+        lastAction: newContext.lastAction,
+        lastError: newContext.lastError,
+        inputRequest: newContext.inputRequest,
+        inputStatus: newContext.inputStatus,
+        userInput: newContext.userInput,
+        userContext: newContext.userContext,
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: 'Multi-field form displayed. Use get_user_input to retrieve submitted values.',
+              requestId,
+              fieldCount: fields.length,
+              fieldKeys: fields.map(f => f.key),
+              currentState: newState,
             }),
           },
         ],

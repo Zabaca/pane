@@ -12,8 +12,9 @@ interface PersistedState {
   history: HistoryEntry[];
   userContext: Record<string, unknown>;
   // Option B: Also persist input request for full state restoration
-  inputRequest: InputRequest | null;
+  inputRequest: AnyInputRequest | null;
   inputStatus: InputStatus;
+  multiFieldInput?: Record<string, unknown> | null;
 }
 
 // History entry type - stores both text and contentType for proper undo
@@ -22,7 +23,7 @@ export interface HistoryEntry {
   contentType: 'text' | 'markdown';
 }
 
-// Input request type - describes a pending user input request
+// Input request type - describes a pending user input request (single field)
 export interface InputRequest {
   prompt: string;
   inputType: 'text' | 'textarea' | 'number';
@@ -31,6 +32,31 @@ export interface InputRequest {
   requestId: string;
   key?: string; // Optional key for storing in userContext
   content?: string; // Optional markdown content to display above the input form
+}
+
+// Multi-field form types
+export interface FormField {
+  key: string;
+  label: string;
+  type: 'text' | 'textarea' | 'number' | 'checkbox' | 'select';
+  placeholder?: string;
+  defaultValue?: string | number | boolean;
+  required?: boolean;
+  options?: string[]; // For select fields
+}
+
+export interface MultiFieldRequest {
+  fields: FormField[];
+  content?: string; // Optional markdown content to display above the form
+  requestId: string;
+}
+
+// Union type for any input request
+export type AnyInputRequest = InputRequest | MultiFieldRequest;
+
+// Type guard to check if request is multi-field
+export function isMultiFieldRequest(request: AnyInputRequest | null): request is MultiFieldRequest {
+  return request !== null && 'fields' in request;
 }
 
 // Input status type
@@ -43,9 +69,10 @@ export interface TextMachineContext {
   history: HistoryEntry[];
   lastAction: string | null;
   lastError: string | null;
-  // User input fields
-  inputRequest: InputRequest | null;
-  userInput: string | null;
+  // User input fields - supports both single and multi-field forms
+  inputRequest: AnyInputRequest | null;
+  userInput: string | null; // For single-field responses
+  multiFieldInput: Record<string, unknown> | null; // For multi-field responses
   inputStatus: InputStatus;
   // Persistent user context - stores keyed values across multiple inputs
   userContext: Record<string, unknown>;
@@ -59,10 +86,13 @@ export type TextMachineEvent =
   | { type: 'CLEAR_TEXT' }
   | { type: 'UNDO' }
   | { type: 'RESET' }
-  // User input events
+  // Single-field input events
   | { type: 'SHOW_INPUT'; request: InputRequest }
   | { type: 'SUBMIT_INPUT'; value: string; requestId: string }
   | { type: 'CANCEL_INPUT'; requestId: string }
+  // Multi-field form events
+  | { type: 'SHOW_MULTI_FORM'; request: MultiFieldRequest }
+  | { type: 'SUBMIT_MULTI_FORM'; values: Record<string, unknown>; requestId: string }
   // User context events
   | { type: 'SET_USER_CONTEXT'; key: string; value: unknown }
   | { type: 'CLEAR_USER_CONTEXT' };
@@ -76,6 +106,7 @@ const initialContext: TextMachineContext = {
   lastError: null,
   inputRequest: null,
   userInput: null,
+  multiFieldInput: null,
   inputStatus: 'idle',
   userContext: {},
 };
@@ -122,8 +153,20 @@ export const textMachine = createMachine({
           actions: assign({
             inputRequest: ({ event }) => event.request,
             userInput: () => null,
+            multiFieldInput: () => null,
             inputStatus: () => 'pending' as const,
             lastAction: () => 'show_input',
+            lastError: () => null,
+          }),
+        },
+        SHOW_MULTI_FORM: {
+          target: 'waitingForInput',
+          actions: assign({
+            inputRequest: ({ event }) => event.request,
+            userInput: () => null,
+            multiFieldInput: () => null,
+            inputStatus: () => 'pending' as const,
+            lastAction: () => 'show_multi_form',
             lastError: () => null,
           }),
         },
@@ -209,8 +252,20 @@ export const textMachine = createMachine({
           actions: assign({
             inputRequest: ({ event }) => event.request,
             userInput: () => null,
+            multiFieldInput: () => null,
             inputStatus: () => 'pending' as const,
             lastAction: () => 'show_input',
+            lastError: () => null,
+          }),
+        },
+        SHOW_MULTI_FORM: {
+          target: 'waitingForInput',
+          actions: assign({
+            inputRequest: ({ event }) => event.request,
+            userInput: () => null,
+            multiFieldInput: () => null,
+            inputStatus: () => 'pending' as const,
+            lastAction: () => 'show_multi_form',
             lastError: () => null,
           }),
         },
@@ -264,12 +319,37 @@ export const textMachine = createMachine({
             context.inputRequest?.requestId === event.requestId,
           actions: assign({
             userInput: () => null,
+            multiFieldInput: () => null,
             inputStatus: () => 'cancelled' as const,
             // Preserve input content as the displayed text (if content was provided)
             text: ({ context }) => context.inputRequest?.content || context.text,
             contentType: ({ context }) => context.inputRequest?.content ? 'markdown' as const : context.contentType,
             inputRequest: () => null,
             lastAction: () => 'input_cancelled',
+            lastError: () => null,
+          }),
+        },
+        SUBMIT_MULTI_FORM: {
+          target: 'displaying',
+          guard: ({ context, event }) =>
+            context.inputRequest?.requestId === event.requestId,
+          actions: assign({
+            multiFieldInput: ({ event }) => event.values,
+            userInput: () => null,
+            inputStatus: () => 'submitted' as const,
+            // Store all field values in userContext
+            userContext: ({ context, event }) => {
+              const newContext = { ...context.userContext };
+              for (const [key, value] of Object.entries(event.values)) {
+                newContext[key] = value;
+              }
+              return newContext;
+            },
+            // Preserve input content as the displayed text (if content was provided)
+            text: ({ context }) => context.inputRequest?.content || context.text,
+            contentType: ({ context }) => context.inputRequest?.content ? 'markdown' as const : context.contentType,
+            inputRequest: () => null,
+            lastAction: () => 'multi_form_submitted',
             lastError: () => null,
           }),
         },
@@ -406,6 +486,7 @@ function loadPersistedState(): Partial<TextMachineContext> | null {
         userContext: parsed.userContext || {},
         inputRequest,
         inputStatus: inputRequest ? 'pending' : (parsed.inputStatus || 'idle'),
+        multiFieldInput: parsed.multiFieldInput || null,
       };
     }
   } catch (error) {
@@ -425,6 +506,7 @@ function saveState(context: TextMachineContext): void {
       // Option B: Also save input request for full state restoration
       inputRequest: context.inputRequest,
       inputStatus: context.inputStatus,
+      multiFieldInput: context.multiFieldInput,
     };
     fs.writeFileSync(STATE_FILE, JSON.stringify(toSave, null, 2));
     console.error(`[Persistence] State saved to ${STATE_FILE}`);
@@ -457,6 +539,7 @@ export function getActor() {
         inputRequest: persistedState.inputRequest || null,
         inputStatus: persistedState.inputStatus || 'idle',
         userInput: null,
+        multiFieldInput: persistedState.multiFieldInput || null,
       };
 
       // Determine initial state based on content and pending input

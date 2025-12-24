@@ -5,7 +5,7 @@ import StateIndicator from './components/StateIndicator.vue';
 import ActionLog from './components/ActionLog.vue';
 import UserContext from './components/UserContext.vue';
 
-const { connected, state, actionLog, submitInput, cancelInput } = useWebSocket();
+const { connected, state, actionLog, submitInput, cancelInput, submitMultiForm } = useWebSocket();
 </script>
 
 <template>
@@ -27,6 +27,7 @@ const { connected, state, actionLog, submitInput, cancelInput } = useWebSocket()
           :input-request="state.inputRequest"
           @submit-input="submitInput"
           @cancel-input="cancelInput"
+          @submit-multi-form="submitMultiForm"
         />
       </div>
 

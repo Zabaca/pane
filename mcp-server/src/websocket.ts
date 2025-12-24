@@ -1,5 +1,5 @@
 import { WebSocketServer, WebSocket } from 'ws';
-import { getSnapshot, getAvailableActions, sendEvent, type InputRequest, type InputStatus, type TextMachineEvent } from './machine.js';
+import { getSnapshot, getAvailableActions, sendEvent, type AnyInputRequest, type InputStatus, type TextMachineEvent } from './machine.js';
 
 let wss: WebSocketServer | null = null;
 const clients = new Set<WebSocket>();
@@ -11,18 +11,20 @@ export interface StateUpdate {
   historyCount: number;
   lastAction: string | null;
   lastError: string | null;
-  inputRequest: InputRequest | null;
+  inputRequest: AnyInputRequest | null;
   inputStatus: InputStatus;
   userInput: string | null;
+  multiFieldInput?: Record<string, unknown> | null;
   userContext?: Record<string, unknown>;
 }
 
 // Incoming message types from frontend
 export interface IncomingMessage {
-  type: 'submit_input' | 'cancel_input';
+  type: 'submit_input' | 'cancel_input' | 'submit_multi_form';
   payload: {
     requestId: string;
     value?: string;
+    values?: Record<string, unknown>; // For multi-field forms
   };
 }
 
@@ -121,6 +123,13 @@ function handleIncomingMessage(message: IncomingMessage) {
     case 'cancel_input':
       event = {
         type: 'CANCEL_INPUT',
+        requestId: message.payload.requestId,
+      };
+      break;
+    case 'submit_multi_form':
+      event = {
+        type: 'SUBMIT_MULTI_FORM',
+        values: message.payload.values || {},
         requestId: message.payload.requestId,
       };
       break;

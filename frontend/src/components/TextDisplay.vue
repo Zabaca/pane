@@ -1,31 +1,58 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import MermaidDisplay from './MermaidDisplay.vue';
-import type { InputRequest } from '../composables/useWebSocket';
+import MultiFieldForm from './MultiFieldForm.vue';
+import {
+  isMultiFieldRequest,
+  type AnyInputRequest,
+  type InputRequest,
+  type MultiFieldRequest,
+} from '../composables/useWebSocket';
 
 const props = defineProps<{
   text: string;
   state: string;
   contentType: 'text' | 'markdown';
-  inputRequest?: InputRequest | null;
+  inputRequest?: AnyInputRequest | null;
 }>();
 
 const emit = defineEmits<{
   submitInput: [value: string, requestId: string];
   cancelInput: [requestId: string];
+  submitMultiForm: [values: Record<string, unknown>, requestId: string];
 }>();
 
-// Input form state
+// Input form state (for single-field)
 const inputValue = ref('');
 
-// Reset input value when request changes
+// Reset input value when request changes (for single-field)
 watch(() => props.inputRequest?.requestId, () => {
-  inputValue.value = props.inputRequest?.defaultValue || '';
+  if (props.inputRequest && !isMultiFieldRequest(props.inputRequest)) {
+    inputValue.value = props.inputRequest.defaultValue || '';
+  }
 });
 
 // Computed properties
 const isWaitingForInput = computed(() => props.state === 'waitingForInput' && props.inputRequest);
+const isMultiField = computed(() => isMultiFieldRequest(props.inputRequest));
+const isSingleField = computed(() => isWaitingForInput.value && !isMultiField.value);
 const hasInputContent = computed(() => !!props.inputRequest?.content);
+
+// Get single-field request (type-safe)
+const singleFieldRequest = computed(() => {
+  if (props.inputRequest && !isMultiFieldRequest(props.inputRequest)) {
+    return props.inputRequest as InputRequest;
+  }
+  return null;
+});
+
+// Get multi-field request (type-safe)
+const multiFieldRequest = computed(() => {
+  if (props.inputRequest && isMultiFieldRequest(props.inputRequest)) {
+    return props.inputRequest as MultiFieldRequest;
+  }
+  return null;
+});
 
 // Display content: use inputRequest.content when waiting for input, otherwise use text
 const displayContent = computed(() => {
@@ -43,14 +70,16 @@ const isMarkdown = computed(() => {
 });
 
 const label = computed(() => {
-  if (isWaitingForInput.value) return 'Input Required';
+  if (isWaitingForInput.value) {
+    return isMultiField.value ? 'Form Required' : 'Input Required';
+  }
   return isMarkdown.value ? 'Markdown Content' : 'Displayed Text';
 });
 
-// Input handlers
+// Single-field input handlers
 function handleSubmit() {
-  if (props.inputRequest) {
-    emit('submitInput', inputValue.value, props.inputRequest.requestId);
+  if (singleFieldRequest.value) {
+    emit('submitInput', inputValue.value, singleFieldRequest.value.requestId);
   }
 }
 
@@ -58,6 +87,15 @@ function handleCancel() {
   if (props.inputRequest) {
     emit('cancelInput', props.inputRequest.requestId);
   }
+}
+
+// Multi-field form handlers
+function handleMultiFormSubmit(values: Record<string, unknown>, requestId: string) {
+  emit('submitMultiForm', values, requestId);
+}
+
+function handleMultiFormCancel(requestId: string) {
+  emit('cancelInput', requestId);
 }
 </script>
 
@@ -78,23 +116,23 @@ function handleCancel() {
       </template>
     </div>
 
-    <!-- Input form section (shown when waiting for input) -->
-    <div v-if="isWaitingForInput" class="input-section">
-      <div class="prompt">{{ inputRequest?.prompt }}</div>
+    <!-- Single-field input form section -->
+    <div v-if="isSingleField && singleFieldRequest" class="input-section">
+      <div class="prompt">{{ singleFieldRequest.prompt }}</div>
 
       <div class="input-wrapper">
         <textarea
-          v-if="inputRequest?.inputType === 'textarea'"
+          v-if="singleFieldRequest.inputType === 'textarea'"
           v-model="inputValue"
-          :placeholder="inputRequest?.placeholder"
+          :placeholder="singleFieldRequest.placeholder"
           class="input textarea"
           rows="3"
         />
         <input
           v-else
           v-model="inputValue"
-          :type="inputRequest?.inputType === 'number' ? 'number' : 'text'"
-          :placeholder="inputRequest?.placeholder"
+          :type="singleFieldRequest.inputType === 'number' ? 'number' : 'text'"
+          :placeholder="singleFieldRequest.placeholder"
           class="input"
           @keyup.enter="handleSubmit"
         />
@@ -108,6 +146,15 @@ function handleCancel() {
           Submit
         </button>
       </div>
+    </div>
+
+    <!-- Multi-field form section -->
+    <div v-else-if="isMultiField && multiFieldRequest" class="multi-form-section">
+      <MultiFieldForm
+        :request="multiFieldRequest"
+        @submit="handleMultiFormSubmit"
+        @cancel="handleMultiFormCancel"
+      />
     </div>
   </div>
 </template>
@@ -292,5 +339,11 @@ function handleCancel() {
 
 .btn-secondary:hover {
   background: #444;
+}
+
+/* Multi-form section */
+.multi-form-section {
+  margin-top: auto;
+  padding-top: 16px;
 }
 </style>

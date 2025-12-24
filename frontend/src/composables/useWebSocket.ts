@@ -7,6 +7,7 @@ export interface AvailableAction {
   reason?: string;
 }
 
+// Single-field input request
 export interface InputRequest {
   prompt: string;
   inputType: 'text' | 'textarea' | 'number';
@@ -14,6 +15,31 @@ export interface InputRequest {
   defaultValue?: string;
   requestId: string;
   content?: string; // Optional markdown content to display above the input form
+}
+
+// Multi-field form types
+export interface FormField {
+  key: string;
+  label: string;
+  type: 'text' | 'textarea' | 'number' | 'checkbox' | 'select';
+  placeholder?: string;
+  defaultValue?: string | number | boolean;
+  required?: boolean;
+  options?: string[]; // For select fields
+}
+
+export interface MultiFieldRequest {
+  fields: FormField[];
+  content?: string; // Optional markdown content to display above the form
+  requestId: string;
+}
+
+// Union type for any input request
+export type AnyInputRequest = InputRequest | MultiFieldRequest;
+
+// Type guard to check if request is multi-field
+export function isMultiFieldRequest(request: AnyInputRequest | null): request is MultiFieldRequest {
+  return request !== null && 'fields' in request;
 }
 
 export type InputStatus = 'idle' | 'pending' | 'submitted' | 'cancelled';
@@ -26,9 +52,10 @@ export interface StateData {
   lastAction: string | null;
   lastError: string | null;
   availableActions: AvailableAction[];
-  inputRequest: InputRequest | null;
+  inputRequest: AnyInputRequest | null;
   inputStatus: InputStatus;
   userInput: string | null;
+  multiFieldInput: Record<string, unknown> | null;
   userContext: Record<string, unknown>;
 }
 
@@ -51,10 +78,26 @@ function getActionDetail(data: StateData): string {
       return `Appended to text (now ${data.text.length} chars)`;
     case 'show_input':
       // Show the prompt that was displayed
-      return data.inputRequest?.prompt || 'Input requested';
+      if (data.inputRequest && !isMultiFieldRequest(data.inputRequest)) {
+        return data.inputRequest.prompt || 'Input requested';
+      }
+      return 'Input requested';
+    case 'show_multi_form':
+      // Show the number of fields
+      if (data.inputRequest && isMultiFieldRequest(data.inputRequest)) {
+        return `${data.inputRequest.fields.length} field form`;
+      }
+      return 'Multi-field form';
     case 'input_submitted':
       // Show the value that was submitted
       return data.userInput || '(empty)';
+    case 'multi_form_submitted':
+      // Show number of values submitted
+      if (data.multiFieldInput) {
+        const keys = Object.keys(data.multiFieldInput);
+        return `${keys.length} values submitted`;
+      }
+      return 'Form submitted';
     case 'input_cancelled':
       return 'User cancelled input';
     case 'clear_text':
@@ -87,6 +130,7 @@ export function useWebSocket(url: string = 'ws://localhost:8765') {
     inputRequest: null,
     inputStatus: 'idle',
     userInput: null,
+    multiFieldInput: null,
     userContext: {},
   });
   const actionLog = ref<ActionLogEntry[]>([]);
@@ -195,6 +239,14 @@ export function useWebSocket(url: string = 'ws://localhost:8765') {
     });
   }
 
+  // Submit multi-field form
+  function submitMultiForm(values: Record<string, unknown>, requestId: string) {
+    sendMessage({
+      type: 'submit_multi_form',
+      payload: { values, requestId },
+    });
+  }
+
   return {
     connected,
     state,
@@ -202,5 +254,6 @@ export function useWebSocket(url: string = 'ws://localhost:8765') {
     error,
     submitInput,
     cancelInput,
+    submitMultiForm,
   };
 }
