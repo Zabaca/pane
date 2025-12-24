@@ -97,6 +97,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
               type: 'string',
               description: 'The question or prompt to display to the user',
             },
+            content: {
+              type: 'string',
+              description: 'Optional markdown content to display above the input form. Use this to provide context, options, or information the user needs to make their decision.',
+            },
             key: {
               type: 'string',
               description: 'Optional key to store the response in userContext (e.g., "userName", "preferredLanguage"). If provided, the value will persist across multiple inputs.',
@@ -309,8 +313,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     case 'show_input_form': {
-      const { prompt, key, inputType, placeholder, defaultValue } = args as {
+      const { prompt, content, key, inputType, placeholder, defaultValue } = args as {
         prompt: string;
+        content?: string;
         key?: string;
         inputType?: 'text' | 'textarea' | 'number';
         placeholder?: string;
@@ -327,6 +332,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         defaultValue,
         requestId,
         key, // Include key for userContext storage
+        content, // Include markdown content for display
       };
 
       const event: TextMachineEvent = { type: 'SHOW_INPUT', request };

@@ -13,6 +13,7 @@ export interface InputRequest {
   placeholder?: string;
   defaultValue?: string;
   requestId: string;
+  content?: string; // Optional markdown content to display above the input form
 }
 
 export type InputStatus = 'idle' | 'pending' | 'submitted' | 'cancelled';

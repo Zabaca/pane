@@ -3,7 +3,6 @@ import { useWebSocket } from './composables/useWebSocket';
 import TextDisplay from './components/TextDisplay.vue';
 import StateIndicator from './components/StateIndicator.vue';
 import ActionLog from './components/ActionLog.vue';
-import InputForm from './components/InputForm.vue';
 import UserContext from './components/UserContext.vue';
 
 const { connected, state, actionLog, submitInput, cancelInput } = useWebSocket();
@@ -20,19 +19,14 @@ const { connected, state, actionLog, submitInput, cancelInput } = useWebSocket()
 
     <main class="main">
       <div class="display-section">
-        <!-- Show InputForm when waiting for user input -->
-        <InputForm
-          v-if="state.currentState === 'waitingForInput' && state.inputRequest"
-          :request="state.inputRequest"
-          @submit="submitInput"
-          @cancel="(requestId) => cancelInput(requestId)"
-        />
-        <!-- Show TextDisplay otherwise -->
+        <!-- Unified TextDisplay handles both content and input -->
         <TextDisplay
-          v-else
           :text="state.text"
           :state="state.currentState"
           :content-type="state.contentType"
+          :input-request="state.inputRequest"
+          @submit-input="submitInput"
+          @cancel-input="cancelInput"
         />
       </div>
 

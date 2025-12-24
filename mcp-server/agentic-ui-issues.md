@@ -47,25 +47,25 @@ show_multi_form({
 ---
 
 ### Issue #3: No Combined Display + Input
-**Status:** Active - Needs Enhancement
+**Status:** ✅ RESOLVED (2025-12-24)
 **Priority:** High
 **Description:** Currently, displaying content (`set_markdown`) and requesting input (`show_input_form`) are mutually exclusive. Cannot show contextual information while also asking for user input.
 
-**Current Behavior:**
-- `set_markdown` → Shows content, no input
-- `show_input_form` → Shows input form, content disappears or is separate
+**Solution Implemented:**
+- Added `content` parameter to `show_input_form` tool
+- Integrated input form directly into `TextDisplay` component
+- When `show_input_form` is called with `content`, the markdown displays in the main area with input form below
 
-**Desired Behavior:** Unified tool that displays context + asks question:
+**Usage:**
 ```javascript
-show_prompt({
-  content: "Here's what I found about X...",  // Markdown context
-  question: "Which option do you prefer?",
-  key: "userChoice",
-  inputType: "text"
+show_input_form({
+  content: "## Here's what I found...\n\n- Option A\n- Option B",
+  prompt: "Which option do you prefer?",
+  key: "userChoice"
 })
 ```
 
-This would allow Claude to present information AND gather feedback in a single view.
+This allows Claude to present information AND gather feedback in a single unified view.
 
 ---
 
@@ -143,7 +143,7 @@ initialContext = JSON.parse(saved);
 ## Implementation Priority
 
 1. ~~**Issue #1** - User context with keyed storage~~ ✅ DONE
-2. **Issue #5** - State persistence (HIGH - prevents data loss)
-3. **Issue #2** - Multi-field forms
-4. **Issue #3** - Combined display + input
+2. ~~**Issue #3** - Combined display + input~~ ✅ DONE
+3. **Issue #5** - State persistence (HIGH - prevents data loss)
+4. **Issue #2** - Multi-field forms
 5. **Issue #4** - Auto-trigger (requires workaround research)

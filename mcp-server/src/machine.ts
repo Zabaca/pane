@@ -14,6 +14,7 @@ export interface InputRequest {
   defaultValue?: string;
   requestId: string;
   key?: string; // Optional key for storing in userContext
+  content?: string; // Optional markdown content to display above the input form
 }
 
 // Input status type
@@ -233,6 +234,9 @@ export const textMachine = createMachine({
               }
               return context.userContext;
             },
+            // Preserve input content as the displayed text (if content was provided)
+            text: ({ context }) => context.inputRequest?.content || context.text,
+            contentType: ({ context }) => context.inputRequest?.content ? 'markdown' as const : context.contentType,
             inputRequest: () => null,
             lastAction: () => 'input_submitted',
             lastError: () => null,
@@ -245,6 +249,9 @@ export const textMachine = createMachine({
           actions: assign({
             userInput: () => null,
             inputStatus: () => 'cancelled' as const,
+            // Preserve input content as the displayed text (if content was provided)
+            text: ({ context }) => context.inputRequest?.content || context.text,
+            contentType: ({ context }) => context.inputRequest?.content ? 'markdown' as const : context.contentType,
             inputRequest: () => null,
             lastAction: () => 'input_cancelled',
             lastError: () => null,

@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import type { InputRequest } from '../composables/useWebSocket';
+import MermaidDisplay from './MermaidDisplay.vue';
 
 const props = defineProps<{
   request: InputRequest;
 }>();
+
+const hasContent = computed(() => !!props.request.content);
 
 const emit = defineEmits<{
   submit: [value: string, requestId: string];
@@ -28,34 +31,42 @@ function handleCancel() {
 </script>
 
 <template>
-  <div class="input-form">
-    <div class="prompt">{{ request.prompt }}</div>
-
-    <div class="input-wrapper">
-      <textarea
-        v-if="request.inputType === 'textarea'"
-        v-model="inputValue"
-        :placeholder="request.placeholder"
-        class="input textarea"
-        rows="4"
-      />
-      <input
-        v-else
-        v-model="inputValue"
-        :type="request.inputType === 'number' ? 'number' : 'text'"
-        :placeholder="request.placeholder"
-        class="input"
-        @keyup.enter="handleSubmit"
-      />
+  <div class="input-form" :class="{ 'has-content': hasContent }">
+    <!-- Markdown content section (when provided) -->
+    <div v-if="hasContent" class="content-section">
+      <MermaidDisplay :content="request.content!" />
     </div>
 
-    <div class="actions">
-      <button class="btn btn-secondary" @click="handleCancel">
-        Cancel
-      </button>
-      <button class="btn btn-primary" @click="handleSubmit">
-        Submit
-      </button>
+    <!-- Input section -->
+    <div class="input-section">
+      <div class="prompt">{{ request.prompt }}</div>
+
+      <div class="input-wrapper">
+        <textarea
+          v-if="request.inputType === 'textarea'"
+          v-model="inputValue"
+          :placeholder="request.placeholder"
+          class="input textarea"
+          rows="4"
+        />
+        <input
+          v-else
+          v-model="inputValue"
+          :type="request.inputType === 'number' ? 'number' : 'text'"
+          :placeholder="request.placeholder"
+          class="input"
+          @keyup.enter="handleSubmit"
+        />
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" @click="handleCancel">
+          Cancel
+        </button>
+        <button class="btn btn-primary" @click="handleSubmit">
+          Submit
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -71,16 +82,43 @@ function handleCancel() {
   margin: 0 auto;
 }
 
+/* Expand width when content is present */
+.input-form.has-content {
+  max-width: 800px;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
 }
 
+/* Content section - displays markdown above input */
+.content-section {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #333;
+}
+
+/* Input section */
+.input-section {
+  /* Keeps input compact */
+}
+
 .prompt {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: #fff;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  text-align: left;
+  font-weight: 500;
+}
+
+/* Center prompt when no content */
+.input-form:not(.has-content) .prompt {
   text-align: center;
+  font-size: 1.2rem;
+  margin-bottom: 16px;
 }
 
 .input-wrapper {
