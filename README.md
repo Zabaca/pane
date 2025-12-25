@@ -1,6 +1,6 @@
-# Agentic UI Prototype
+# Pane
 
-A prototype demonstrating AI-controllable UI architecture with state machines.
+AI-controllable UI canvas with state machine architecture.
 
 ![Demo](assets/agentic-ui-demo.gif)
 
@@ -18,32 +18,28 @@ Claude Code <--stdio--> MCP Server <--WebSocket--> Vue Frontend
 ### 1. Install Dependencies
 
 ```bash
-# From the research project root
-bun install
-
-# Or install individually
-cd packages/agentic-ui-prototype/mcp-server && bun install
-cd packages/agentic-ui-prototype/frontend && bun install
+cd mcp-server && bun install
+cd frontend && bun install
 ```
 
 ### 2. Start the Frontend
 
 ```bash
-cd packages/agentic-ui-prototype/frontend
+cd frontend
 bun run dev
 # Opens at http://localhost:3000
 ```
 
 ### 3. Add MCP Server to Claude Code
 
-Add to your Claude Code MCP settings (`~/.claude.json` or project settings):
+Add to your Claude Code MCP settings:
 
 ```json
 {
   "mcpServers": {
-    "agentic-ui": {
+    "pane": {
       "command": "bun",
-      "args": ["run", "/Users/james/Projects/uptownhr/research/packages/mcp-agentic-ui/mcp-server/src/index.ts"]
+      "args": ["run", "/path/to/pane/mcp-server/src/index.ts"]
     }
   }
 }
@@ -53,54 +49,27 @@ Add to your Claude Code MCP settings (`~/.claude.json` or project settings):
 
 After adding the MCP server config, restart Claude Code to load the new tools.
 
-## Usage
+## Features
 
-Once connected, ask Claude to interact with the UI:
-
-- "Set the text to 'Hello World'"
-- "Append ' - from Claude' to the text"
-- "Clear the text"
-- "Undo that change"
-- "What's the current state of the UI?"
+- **Text & Markdown Display** - Rich content with Mermaid diagram support
+- **User Input Forms** - Single and multi-field forms with various input types
+- **Long-Polling** - Auto-trigger when user submits (no manual Enter needed)
+- **State Persistence** - Full state restoration across MCP restarts
+- **User Context** - Persistent key-value storage across interactions
 
 ## MCP Tools
 
-### `get_app_info`
-Returns information about what the app does and its capabilities.
-
-### `get_current_state`
-Returns the current state including:
-- Current machine state (idle/displaying)
-- Current text content
-- History count
-- Available actions
-
-### `execute_action`
-Executes an action. Available actions:
-- `set_text` - Set text to a value (requires `{ text: "..." }` payload)
-- `append_text` - Append to existing text (requires `{ text: "..." }` payload)
-- `clear_text` - Clear all text
-- `undo` - Undo last change (only available if history exists)
-- `reset` - Reset to initial state
-
-## State Machine
-
-```
-States: idle <-> displaying
-                     |
-                   error
-
-Context:
-- text: string (displayed text)
-- history: string[] (previous text values)
-- lastAction: string (last executed action)
-- lastError: string (last error message)
-
-Transitions:
-- idle + set_text/append_text -> displaying
-- displaying + clear_text -> idle
-- displaying + undo -> idle (if text becomes empty)
-```
+| Tool | Description |
+|------|-------------|
+| `get_app_info` | Get app info and capabilities |
+| `get_current_state` | Get current state, text, and available actions |
+| `execute_action` | Execute actions (set_text, set_markdown, clear, undo, reset) |
+| `show_input_form` | Display single-field input form |
+| `show_multi_form` | Display multi-field form |
+| `get_user_input` | Long-poll for user input (blocks until submitted) |
+| `get_user_context` | Get persistent user context values |
+| `set_user_context` | Set a user context value |
+| `clear_user_context` | Clear all user context |
 
 ## Development
 
@@ -116,6 +85,6 @@ cd frontend
 bun run dev
 ```
 
-## Related Documentation
+## License
 
-See `~/.lattice/docs/agentic-frontend/state-machine-architecture.md` for the full architecture specification.
+MIT

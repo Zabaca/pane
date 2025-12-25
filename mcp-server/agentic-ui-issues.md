@@ -1,6 +1,8 @@
-# Agentic UI - Issues Log
+# Pane - Issues Log
 
-Tracking issues encountered while using Claude Code with Agentic UI as the primary communication interface.
+Tracking issues encountered while using Claude Code with Pane as the primary communication interface.
+
+> **Note:** Project renamed from "Agentic UI" to "Pane" (`@zabaca/pane`) on 2025-12-24.
 
 ## Session: 2025-12-24
 
@@ -159,8 +161,9 @@ interface PersistedState {
 
 ## Notes
 
-- All communication with user now happening through Agentic UI canvas
-- MCP server located at: `packages/mcp-agentic-ui/mcp-server/`
+- All communication with user now happening through Pane UI canvas
+- NPM packages: `@zabaca/pane` (server), `@zabaca/pane-ui` (frontend)
+- Repository: `zabaca/pane`
 
 ## Implementation Priority
 

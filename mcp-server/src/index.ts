@@ -20,8 +20,8 @@ import { startWebSocketServer, broadcastState, closeWebSocketServer, isPortInUse
 
 // App description
 const APP_INFO = {
-  name: 'Agentic UI Prototype',
-  purpose: 'A simple text display controlled by AI through state machine actions',
+  name: 'Pane',
+  purpose: 'AI-controllable UI canvas with state machine architecture',
   capabilities: [
     'Display text on screen',
     'Set text to any value',
@@ -43,7 +43,7 @@ const APP_INFO = {
 // Create MCP server
 const server = new Server(
   {
-    name: 'agentic-ui-prototype',
+    name: 'pane',
     version: '0.1.0',
   },
   {
@@ -761,7 +761,7 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  console.error('Agentic UI MCP Server running');
+  console.error('Pane MCP Server running');
   console.error(`WebSocket server on ws://localhost:${WS_PORT}`);
 }
 
