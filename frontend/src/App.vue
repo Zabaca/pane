@@ -1,23 +1,34 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useWebSocket } from './composables/useWebSocket';
 import TextDisplay from './components/TextDisplay.vue';
 import StateIndicator from './components/StateIndicator.vue';
 import ActionLog from './components/ActionLog.vue';
 import UserContext from './components/UserContext.vue';
 
-const { connected, state, actionLog, submitInput, cancelInput, submitMultiForm } = useWebSocket();
+const { connected, state, actionLog, submitInput, cancelInput, submitMultiForm, toggleSidebar } = useWebSocket();
+
+// Get sidebarVisible from WebSocket state
+const sidebarVisible = computed(() => state.value.sidebarVisible ?? true);
 </script>
 
 <template>
   <div class="app">
     <header class="header">
-      <h1>Agentic UI Prototype</h1>
+      <h1>Pane</h1>
+      <button
+        class="sidebar-toggle"
+        @click="toggleSidebar"
+        :title="sidebarVisible ? 'Hide sidebar' : 'Show sidebar'"
+      >
+        {{ sidebarVisible ? '→' : '←' }}
+      </button>
       <div class="connection-status" :class="{ connected }">
         {{ connected ? 'Connected' : 'Disconnected' }}
       </div>
     </header>
 
-    <main class="main">
+    <main class="main" :class="{ 'sidebar-hidden': !sidebarVisible }">
       <div class="display-section">
         <!-- Unified TextDisplay handles both content and input -->
         <TextDisplay
@@ -31,7 +42,7 @@ const { connected, state, actionLog, submitInput, cancelInput, submitMultiForm }
         />
       </div>
 
-      <div class="info-section">
+      <div v-if="sidebarVisible" class="info-section">
         <UserContext :user-context="state.userContext" />
         <StateIndicator
           :current-state="state.currentState"
@@ -61,8 +72,8 @@ const { connected, state, actionLog, submitInput, cancelInput, submitMultiForm }
 
 .header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 16px;
   margin-bottom: 30px;
   padding-bottom: 20px;
   border-bottom: 1px solid #333;
@@ -72,6 +83,28 @@ const { connected, state, actionLog, submitInput, cancelInput, submitMultiForm }
   font-size: 1.5rem;
   font-weight: 500;
   color: #fff;
+  margin-right: auto;
+}
+
+.sidebar-toggle {
+  padding: 8px 12px;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  min-width: 40px;
+}
+
+.sidebar-toggle:hover {
+  background: #333;
+  border-color: #ff9f4a;
+}
+
+.sidebar-toggle:active {
+  transform: scale(0.95);
 }
 
 .connection-status {
@@ -92,6 +125,10 @@ const { connected, state, actionLog, submitInput, cancelInput, submitMultiForm }
   display: grid;
   grid-template-columns: 1fr 400px;
   gap: 30px;
+}
+
+.main.sidebar-hidden {
+  grid-template-columns: 1fr;
 }
 
 .display-section {

@@ -17,13 +17,14 @@ export interface StateUpdate {
   userInput: string | null;
   multiFieldInput?: Record<string, unknown> | null;
   userContext?: Record<string, unknown>;
+  sidebarVisible: boolean;
 }
 
 // Incoming message types from frontend
 export interface IncomingMessage {
-  type: 'submit_input' | 'cancel_input' | 'submit_multi_form';
-  payload: {
-    requestId: string;
+  type: 'submit_input' | 'cancel_input' | 'submit_multi_form' | 'toggle_sidebar';
+  payload?: {
+    requestId?: string;
     value?: string;
     values?: Record<string, unknown>; // For multi-field forms
   };
@@ -55,6 +56,7 @@ export function startWebSocketServer(port: number) {
           inputStatus: context.inputStatus,
           userInput: context.userInput,
           userContext: context.userContext,
+          sidebarVisible: context.sidebarVisible,
           availableActions: getAvailableActions(state, context),
         },
       })
@@ -117,21 +119,26 @@ function handleIncomingMessage(message: IncomingMessage) {
     case 'submit_input':
       event = {
         type: 'SUBMIT_INPUT',
-        value: message.payload.value || '',
-        requestId: message.payload.requestId,
+        value: message.payload?.value || '',
+        requestId: message.payload?.requestId || '',
       };
       break;
     case 'cancel_input':
       event = {
         type: 'CANCEL_INPUT',
-        requestId: message.payload.requestId,
+        requestId: message.payload?.requestId || '',
       };
       break;
     case 'submit_multi_form':
       event = {
         type: 'SUBMIT_MULTI_FORM',
-        values: message.payload.values || {},
-        requestId: message.payload.requestId,
+        values: message.payload?.values || {},
+        requestId: message.payload?.requestId || '',
+      };
+      break;
+    case 'toggle_sidebar':
+      event = {
+        type: 'TOGGLE_SIDEBAR',
       };
       break;
     default:
@@ -156,6 +163,7 @@ function handleIncomingMessage(message: IncomingMessage) {
     inputStatus: newContext.inputStatus,
     userInput: newContext.userInput,
     userContext: newContext.userContext,
+    sidebarVisible: newContext.sidebarVisible,
   });
 }
 

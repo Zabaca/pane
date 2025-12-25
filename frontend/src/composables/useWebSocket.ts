@@ -57,6 +57,7 @@ export interface StateData {
   userInput: string | null;
   multiFieldInput: Record<string, unknown> | null;
   userContext: Record<string, unknown>;
+  sidebarVisible: boolean;
 }
 
 export interface ActionLogEntry {
@@ -132,6 +133,7 @@ export function useWebSocket(url: string = 'ws://localhost:8765') {
     userInput: null,
     multiFieldInput: null,
     userContext: {},
+    sidebarVisible: true,
   });
   const actionLog = ref<ActionLogEntry[]>([]);
   const error = ref<string | null>(null);
@@ -247,6 +249,17 @@ export function useWebSocket(url: string = 'ws://localhost:8765') {
     });
   }
 
+  // Toggle sidebar visibility
+  function toggleSidebar() {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({
+        type: 'toggle_sidebar'
+      }));
+    } else {
+      console.error('WebSocket not connected');
+    }
+  }
+
   return {
     connected,
     state,
@@ -255,5 +268,6 @@ export function useWebSocket(url: string = 'ws://localhost:8765') {
     submitInput,
     cancelInput,
     submitMultiForm,
+    toggleSidebar,
   };
 }

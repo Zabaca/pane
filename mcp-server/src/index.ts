@@ -305,6 +305,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         case 'reset':
           event = { type: 'RESET' };
           break;
+        case 'toggle_sidebar':
+          event = { type: 'TOGGLE_SIDEBAR' };
+          break;
         default:
           return {
             content: [
@@ -336,6 +339,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         inputStatus: newContext.inputStatus,
         userInput: newContext.userInput,
         userContext: newContext.userContext,
+        sidebarVisible: newContext.sidebarVisible,
       });
 
       // Check if there was an error
@@ -411,6 +415,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         inputStatus: newContext.inputStatus,
         userInput: newContext.userInput,
         userContext: newContext.userContext,
+        sidebarVisible: newContext.sidebarVisible,
       });
 
       return {
@@ -610,6 +615,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         inputStatus: newContext.inputStatus,
         userInput: newContext.userInput,
         userContext: newContext.userContext,
+        sidebarVisible: newContext.sidebarVisible,
       });
 
       return {
@@ -645,6 +651,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         inputStatus: newContext.inputStatus,
         userInput: newContext.userInput,
         userContext: newContext.userContext,
+        sidebarVisible: newContext.sidebarVisible,
       });
 
       return {
@@ -693,6 +700,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         inputStatus: newContext.inputStatus,
         userInput: newContext.userInput,
         userContext: newContext.userContext,
+        sidebarVisible: newContext.sidebarVisible,
       });
 
       return {

@@ -15,6 +15,7 @@ interface PersistedState {
   inputRequest: AnyInputRequest | null;
   inputStatus: InputStatus;
   multiFieldInput?: Record<string, unknown> | null;
+  sidebarVisible: boolean;
 }
 
 // History entry type - stores both text and contentType for proper undo
@@ -76,6 +77,8 @@ export interface TextMachineContext {
   inputStatus: InputStatus;
   // Persistent user context - stores keyed values across multiple inputs
   userContext: Record<string, unknown>;
+  // Sidebar visibility state
+  sidebarVisible: boolean;
 }
 
 // Event types
@@ -95,7 +98,9 @@ export type TextMachineEvent =
   | { type: 'SUBMIT_MULTI_FORM'; values: Record<string, unknown>; requestId: string }
   // User context events
   | { type: 'SET_USER_CONTEXT'; key: string; value: unknown }
-  | { type: 'CLEAR_USER_CONTEXT' };
+  | { type: 'CLEAR_USER_CONTEXT' }
+  // Sidebar toggle event
+  | { type: 'TOGGLE_SIDEBAR' };
 
 // Initial context
 const initialContext: TextMachineContext = {
@@ -109,6 +114,7 @@ const initialContext: TextMachineContext = {
   multiFieldInput: null,
   inputStatus: 'idle',
   userContext: {},
+  sidebarVisible: true,
 };
 
 // Create the state machine
@@ -184,6 +190,13 @@ export const textMachine = createMachine({
           actions: assign({
             userContext: () => ({}),
             lastAction: () => 'clear_user_context',
+            lastError: () => null,
+          }),
+        },
+        TOGGLE_SIDEBAR: {
+          actions: assign({
+            sidebarVisible: ({ context }) => !context.sidebarVisible,
+            lastAction: () => 'toggle_sidebar',
             lastError: () => null,
           }),
         },
@@ -283,6 +296,13 @@ export const textMachine = createMachine({
           actions: assign({
             userContext: () => ({}),
             lastAction: () => 'clear_user_context',
+            lastError: () => null,
+          }),
+        },
+        TOGGLE_SIDEBAR: {
+          actions: assign({
+            sidebarVisible: ({ context }) => !context.sidebarVisible,
+            lastAction: () => 'toggle_sidebar',
             lastError: () => null,
           }),
         },
@@ -453,6 +473,13 @@ export function getAvailableActions(
     inputSchema: { type: 'object', properties: {} },
   });
 
+  // Toggle sidebar is always available
+  actions.push({
+    name: 'toggle_sidebar',
+    description: 'Toggle the sidebar visibility',
+    inputSchema: { type: 'object', properties: {} },
+  });
+
   return actions;
 }
 
@@ -487,6 +514,7 @@ function loadPersistedState(): Partial<TextMachineContext> | null {
         inputRequest,
         inputStatus: inputRequest ? 'pending' : (parsed.inputStatus || 'idle'),
         multiFieldInput: parsed.multiFieldInput || null,
+        sidebarVisible: parsed.sidebarVisible ?? true,
       };
     }
   } catch (error) {
@@ -507,6 +535,7 @@ function saveState(context: TextMachineContext): void {
       inputRequest: context.inputRequest,
       inputStatus: context.inputStatus,
       multiFieldInput: context.multiFieldInput,
+      sidebarVisible: context.sidebarVisible,
     };
     fs.writeFileSync(STATE_FILE, JSON.stringify(toSave, null, 2));
     console.error(`[Persistence] State saved to ${STATE_FILE}`);
@@ -540,6 +569,7 @@ export function getActor() {
         inputStatus: persistedState.inputStatus || 'idle',
         userInput: null,
         multiFieldInput: persistedState.multiFieldInput || null,
+        sidebarVisible: persistedState.sidebarVisible ?? true,
       };
 
       // Determine initial state based on content and pending input
