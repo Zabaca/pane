@@ -1,6 +1,6 @@
 {
   "name": "@zabaca/pane",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Visual interface for AI agents beyond text-only chat",
   "type": "module",
   "main": "./lib/index.js",
