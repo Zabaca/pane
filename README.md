@@ -35,7 +35,7 @@ Then restart Cursor.
 
 Open **http://localhost:3000** and ask your AI:
 
-> *"Use Pane to show me a welcome message"*
+> *"respond using pane"*
 
 That's it!
 
