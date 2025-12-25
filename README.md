@@ -71,6 +71,7 @@ Claude Code <--stdio--> MCP Server <--WebSocket--> Vue Frontend
 | `get_user_context` | Get persistent user context values |
 | `set_user_context` | Set a user context value |
 | `clear_user_context` | Clear all user context |
+| `upload_image` | Upload image (path or base64) for use in markdown |
 
 ## Development
 

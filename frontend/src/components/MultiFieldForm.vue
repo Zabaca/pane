@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import { watch, computed, reactive } from 'vue';
+import { watch, reactive } from 'vue';
 import type { MultiFieldRequest, FormField } from '../composables/useWebSocket';
-import MarkdownDisplay from './MarkdownDisplay.vue';
 
 const props = defineProps<{
   request: MultiFieldRequest;
 }>();
-
-const hasContent = computed(() => !!props.request.content);
 
 const emit = defineEmits<{
   submit: [values: Record<string, unknown>, requestId: string];
@@ -67,12 +64,7 @@ function getInputType(field: FormField): string {
 </script>
 
 <template>
-  <div class="multi-field-form" :class="{ 'has-content': hasContent }">
-    <!-- Markdown content section (when provided) -->
-    <div v-if="hasContent" class="content-section">
-      <MarkdownDisplay :content="request.content!" />
-    </div>
-
+  <div class="multi-field-form">
     <!-- Form section -->
     <div class="form-section">
       <div class="fields">
@@ -152,23 +144,9 @@ function getInputType(field: FormField): string {
   margin: 0 auto;
 }
 
-/* Expand width when content is present */
-.multi-field-form.has-content {
-  max-width: 800px;
-}
-
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
-}
-
-/* Content section - displays markdown above form */
-.content-section {
-  max-height: 300px;
-  overflow-y: auto;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #333;
 }
 
 /* Form section */
