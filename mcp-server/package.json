@@ -1,7 +1,7 @@
 {
   "name": "@zabaca/pane",
   "version": "0.1.2",
-  "description": "AI-controllable UI canvas with state machine architecture",
+  "description": "Visual interface for AI agents beyond text-only chat",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",

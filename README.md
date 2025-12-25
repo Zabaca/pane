@@ -1,6 +1,6 @@
 # Pane
 
-AI-controllable UI canvas with MCP support (Claude Code, Cursor, and more).
+A visual communication channel for AI agents. Instead of text-only responses, agents can show diagrams, request structured input, and maintain visual state throughout your conversation.
 
 ![Demo](assets/agentic-ui-demo.gif)
 
