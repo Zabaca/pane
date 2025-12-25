@@ -2,6 +2,8 @@ import * as http from 'node:http';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
+import * as os from 'node:os';
+
 // MIME types for common file extensions
 const MIME_TYPES: Record<string, string> = {
   '.html': 'text/html',
@@ -10,13 +12,18 @@ const MIME_TYPES: Record<string, string> = {
   '.json': 'application/json',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
   '.gif': 'image/gif',
   '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
   '.ico': 'image/x-icon',
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.ttf': 'font/ttf',
 };
+
+// Image storage directory
+const IMAGES_DIR = path.join(os.homedir(), '.pane', 'images');
 
 let httpServer: http.Server | null = null;
 
@@ -33,6 +40,45 @@ export function startHTTPServer(port: number, staticDir: string): void {
   }
 
   httpServer = http.createServer((req, res) => {
+    // Handle /images/* route from ~/.pane/images/
+    if (req.url?.startsWith('/images/')) {
+      const imagePath = req.url.slice(8); // Remove '/images/'
+      const fullImagePath = path.join(IMAGES_DIR, imagePath);
+
+      // Security: prevent directory traversal
+      if (!fullImagePath.startsWith(IMAGES_DIR)) {
+        res.writeHead(403);
+        res.end('Forbidden');
+        return;
+      }
+
+      // Check if file exists
+      if (!fs.existsSync(fullImagePath)) {
+        res.writeHead(404);
+        res.end('Image not found');
+        return;
+      }
+
+      // Read and serve image
+      fs.readFile(fullImagePath, (err, data) => {
+        if (err) {
+          res.writeHead(500);
+          res.end('Error reading image');
+          return;
+        }
+
+        const ext = path.extname(fullImagePath).toLowerCase();
+        const mimeType = MIME_TYPES[ext] || 'application/octet-stream';
+
+        res.writeHead(200, {
+          'Content-Type': mimeType,
+          'Cache-Control': 'public, max-age=31536000', // 1 year cache (immutable UUIDs)
+        });
+        res.end(data);
+      });
+      return;
+    }
+
     // Default to index.html for root or SPA routes
     let filePath = req.url === '/' ? '/index.html' : req.url || '/index.html';
 

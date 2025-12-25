@@ -19,6 +19,53 @@ import {
 import { startWebSocketServer, broadcastState, closeWebSocketServer, isPortInUse } from './websocket.js';
 import { startHTTPServer, closeHTTPServer, isProductionMode } from './http-server.js';
 import * as path from 'node:path';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as crypto from 'node:crypto';
+
+// ===== Image Upload Utilities =====
+const PANE_DIR = path.join(os.homedir(), '.pane');
+const IMAGES_DIR = path.join(PANE_DIR, 'images');
+
+const SUPPORTED_IMAGE_EXTENSIONS: Record<string, string> = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
+};
+
+function ensureImageDirectory(): void {
+  if (!fs.existsSync(PANE_DIR)) {
+    fs.mkdirSync(PANE_DIR, { recursive: true });
+  }
+  if (!fs.existsSync(IMAGES_DIR)) {
+    fs.mkdirSync(IMAGES_DIR, { recursive: true });
+  }
+}
+
+function generateImageFilename(extension: string): string {
+  const uuid = crypto.randomUUID();
+  return `${uuid}${extension}`;
+}
+
+function getExtensionFromBase64(base64: string): string | null {
+  const match = base64.match(/^data:image\/([^;]+);base64,/);
+  if (match) {
+    const type = match[1].toLowerCase();
+    if (type === 'jpeg' || type === 'jpg') return '.jpg';
+    if (type === 'png') return '.png';
+    if (type === 'gif') return '.gif';
+    if (type === 'svg+xml') return '.svg';
+    if (type === 'webp') return '.webp';
+  }
+  return null;
+}
+
+export function getImagesDirectory(): string {
+  return IMAGES_DIR;
+}
 
 // App description
 const APP_INFO = {
@@ -220,6 +267,23 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
           },
           required: ['fields'],
+        },
+      },
+      {
+        name: 'upload_image',
+        description: 'Upload an image to persistent storage for use in markdown content. Accepts either a file path or base64-encoded image data. Returns a URL that can be used in markdown images like ![alt](/images/filename.png).',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            path: {
+              type: 'string',
+              description: 'Absolute file path to the image (e.g., /path/to/image.png). Mutually exclusive with base64.',
+            },
+            base64: {
+              type: 'string',
+              description: 'Base64-encoded image data URL (e.g., data:image/png;base64,...). Mutually exclusive with path.',
+            },
+          },
         },
       },
     ],
@@ -720,6 +784,111 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
+    case 'upload_image': {
+      const { path: filePath, base64 } = args as {
+        path?: string;
+        base64?: string;
+      };
+
+      // Validate: exactly one of path or base64 must be provided
+      if ((!filePath && !base64) || (filePath && base64)) {
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              success: false,
+              error: 'Provide exactly one of "path" or "base64", not both or neither.',
+            }),
+          }],
+        };
+      }
+
+      try {
+        ensureImageDirectory();
+        let extension: string;
+        let imageBuffer: Buffer;
+
+        if (filePath) {
+          // Handle file path input
+          if (!fs.existsSync(filePath)) {
+            return {
+              content: [{
+                type: 'text',
+                text: JSON.stringify({
+                  success: false,
+                  error: `File not found: ${filePath}`,
+                }),
+              }],
+            };
+          }
+
+          extension = path.extname(filePath).toLowerCase();
+          if (!SUPPORTED_IMAGE_EXTENSIONS[extension]) {
+            return {
+              content: [{
+                type: 'text',
+                text: JSON.stringify({
+                  success: false,
+                  error: `Unsupported image format: ${extension}. Supported: ${Object.keys(SUPPORTED_IMAGE_EXTENSIONS).join(', ')}`,
+                }),
+              }],
+            };
+          }
+
+          imageBuffer = fs.readFileSync(filePath);
+        } else {
+          // Handle base64 input
+          const parsedExt = getExtensionFromBase64(base64!);
+          if (!parsedExt) {
+            return {
+              content: [{
+                type: 'text',
+                text: JSON.stringify({
+                  success: false,
+                  error: 'Invalid base64 data URL. Expected format: data:image/{type};base64,{data}',
+                }),
+              }],
+            };
+          }
+          extension = parsedExt;
+
+          // Extract base64 data (remove data URL prefix)
+          const base64Data = base64!.replace(/^data:image\/[^;]+;base64,/, '');
+          imageBuffer = Buffer.from(base64Data, 'base64');
+        }
+
+        // Generate unique filename and save
+        const filename = generateImageFilename(extension);
+        const destPath = path.join(IMAGES_DIR, filename);
+        fs.writeFileSync(destPath, imageBuffer);
+
+        const url = `/images/${filename}`;
+
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              url,
+              filename,
+              size: imageBuffer.length,
+              message: `Image uploaded successfully. Use in markdown: ![alt](${url})`,
+            }),
+          }],
+        };
+      } catch (error) {
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              success: false,
+              error: `Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            }),
+          }],
+        };
+      }
+    }
+
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
@@ -760,6 +929,9 @@ process.on('uncaughtException', async (err) => {
 
 // Start the server
 async function main() {
+  // Ensure image storage directory exists
+  ensureImageDirectory();
+
   // Check if port is already in use
   const portInUse = await isPortInUse(WS_PORT);
   if (portInUse) {
