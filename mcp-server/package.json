@@ -1,20 +1,23 @@
 {
   "name": "@zabaca/pane",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "AI-controllable UI canvas with state machine architecture",
   "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "bin": {
-    "pane": "./src/index.ts"
+    "pane": "./lib/index.js"
   },
   "scripts": {
     "dev": "bun run src/index.ts",
+    "build:server": "tsc",
     "build:frontend": "cd ../frontend && bun run build",
     "build:copy": "rm -rf dist && cp -r ../frontend/dist .",
-    "build": "bun run build:frontend && bun run build:copy",
+    "build": "bun run build:server && bun run build:frontend && bun run build:copy",
     "prepublishOnly": "bun run build"
   },
   "files": [
-    "src/",
+    "lib/",
     "dist/"
   ],
   "keywords": [
@@ -37,6 +40,7 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@types/node": "^25.0.3",
     "@types/ws": "^8.5.0",
     "typescript": "^5.0.0"
   }

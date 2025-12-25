@@ -1,4 +1,5 @@
 import { WebSocketServer, WebSocket } from 'ws';
+import net from 'net';
 import { getSnapshot, getAvailableActions, sendEvent, type AnyInputRequest, type InputStatus, type TextMachineEvent } from './machine.js';
 
 let wss: WebSocketServer | null = null;
@@ -186,7 +187,6 @@ export function closeWebSocketServer(): Promise<void> {
 
 export function isPortInUse(port: number): Promise<boolean> {
   return new Promise((resolve) => {
-    const net = require('net');
     const server = net.createServer();
 
     server.once('error', (err: NodeJS.ErrnoException) => {

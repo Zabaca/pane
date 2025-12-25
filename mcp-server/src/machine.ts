@@ -297,11 +297,11 @@ export const textMachine = createMachine({
           actions: assign({
             userInput: ({ event }) => event.value,
             inputStatus: () => 'submitted' as const,
-            // Store in userContext if key was provided
+            // Store in userContext if key was provided (only for single-field requests)
             userContext: ({ context, event }) => {
-              const key = context.inputRequest?.key;
-              if (key) {
-                return { ...context.userContext, [key]: event.value };
+              const request = context.inputRequest;
+              if (request && !isMultiFieldRequest(request) && request.key) {
+                return { ...context.userContext, [request.key]: event.value };
               }
               return context.userContext;
             },
