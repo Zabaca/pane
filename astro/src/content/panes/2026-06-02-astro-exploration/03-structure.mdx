@@ -1,0 +1,89 @@
+---
+title: File & directory structure
+---
+
+# 🗂️ How the `astro/` project is laid out
+
+Here's the whole tree (minus `node_modules`, `.astro`, `dist`), grouped by role.
+
+## The shape
+
+```text
+astro/
+├── astro.config.mjs        # integrations + the new-file watcher plugin
+├── components.json         # shadcn config (aliases, preset, base color)
+├── tsconfig.json           # strict TS + the @/* path alias
+├── package.json / bun.lock
+├── public/                 # static assets served as-is (favicons)
+└── src/
+    ├── styles/
+    │   └── global.css       # Tailwind v4 + shadcn theme + typography plugin
+    ├── lib/
+    │   └── utils.ts         # cn() — the shadcn classname helper
+    ├── layouts/
+    │   └── Base.astro       # page chrome: <html>, dark theme, prose wrapper
+    ├── components/
+    │   ├── ui/              # shadcn primitives (you own these, edit freely)
+    │   │   ├── card.tsx  alert.tsx  badge.tsx  button.tsx
+    │   │   ├── table.tsx  tabs.tsx  accordion.tsx  separator.tsx
+    │   │   └── chart.tsx    # Recharts wrapper (ChartContainer, tooltip…)
+    │   └── agent/          # the components YOU (the agent) use in MDX
+    │       ├── Callout.tsx       # info/warning/success/error box
+    │       ├── BarChart.tsx      # data-driven bar chart (React island)
+    │       ├── Chart.astro       # wrapper: adds client:visible to BarChart
+    │       ├── Mermaid.tsx       # client-side mermaid renderer (React island)
+    │       └── MermaidBlock.astro# wrapper: adds client:visible to Mermaid
+    ├── content.config.ts   # defines the "panes" collection (schema-less glob)
+    ├── content/
+    │   └── panes/          # ⬅️ agent writes .md / .mdx HERE
+    │       ├── hello.mdx
+    │       ├── response.mdx
+    │       └── structure.mdx   # ← this file
+    └── pages/
+        ├── index.astro     # lists every pane at /
+        └── [...slug].astro # renders a pane; registers the components prop
+```
+
+## The three layers that matter
+
+<Callout type="info" title="Read it as three concentric rings">
+**Content** (what I write) → **Renderer** (wires content to components) →
+**Components** (the visual vocabulary).
+</Callout>
+
+<Mermaid chart={`flowchart TD
+  W["I write src/content/panes/*.mdx"] --> SLUG["pages/[...slug].astro"]
+  SLUG -->|"components prop"| AG["components/agent/*"]
+  SLUG -->|"layout"| BASE["layouts/Base.astro"]
+  AG --> UI["components/ui/* (shadcn)"]
+  CFG["content.config.ts"] -.defines collection.-> SLUG
+`} />
+
+## Who edits what
+
+| Directory | Who | When |
+| --- | --- | --- |
+| `src/content/panes/` | **the agent** | every response — this is the write target |
+| `src/components/agent/` | agent + you | when a new reusable component is worth standardizing |
+| `src/components/ui/` | rarely | shadcn primitives; regenerate via `shadcn add` |
+| `src/pages/[...slug].astro` | you | when registering a **new** component into MDX |
+| `src/layouts/Base.astro` | you | global look & feel |
+| `astro.config.mjs` | you | integrations / watcher behavior |
+
+## The one rule for adding a component to MDX
+
+A component only becomes usable in a pane after it's registered in the
+`components` object inside **`pages/[...slug].astro`**. That's the single
+chokepoint — import it there once, then every `.mdx` can use it with no import.
+
+<Callout type="warning" title="Naming note">
+The renderer imports `MermaidBlock.astro` but registers it under the name
+`Mermaid` — so in MDX you write `<Mermaid/>`, not `<MermaidBlock/>`. The
+`.astro` wrappers exist only to attach <code>client:visible</code>; you never
+reference them by their filename.
+</Callout>
+
+---
+
+*This pane is `src/content/panes/structure.mdx`. Refresh
+http://localhost:4321/structure — or it may have already hot-reloaded.*

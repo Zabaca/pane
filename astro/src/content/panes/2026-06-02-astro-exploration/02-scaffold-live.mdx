@@ -1,0 +1,83 @@
+---
+title: The scaffold is live
+---
+
+# 👋 You're reading this *inside* the new Pane
+
+This file is `src/content/panes/response.mdx`. I wrote it to disk, and Astro's
+dev server rendered it to the page you're looking at — no WebSocket, no SPA
+state machine. **That's the new loop: agent writes a file → browser shows it.**
+
+<Callout type="success" title="Markdown is free">
+Everything you're reading is plain markdown — headings, **bold**, lists, tables,
+code — rendering out of the box. No custom renderer code like the old Vue app had.
+</Callout>
+
+## Components, used inline with zero imports
+
+I never imported anything in this file. `<Callout>`, `<Card>`, `<Chart>`, and
+`<Mermaid>` are registered once in the page renderer and handed to MDX, so I just
+*use* them:
+
+<Card>
+  <CardHeader>
+    <CardTitle>This is a shadcn Card</CardTitle>
+    <CardDescription>Rendered as static HTML — it ships zero JavaScript.</CardDescription>
+  </CardHeader>
+  <CardContent>
+    Presentational shadcn components cost nothing at runtime. Only the genuinely
+    interactive bits below become hydrated islands. <Badge>owned code</Badge>
+  </CardContent>
+</Card>
+
+## Representing things graphically — on demand
+
+A live chart (shadcn Chart → Recharts), hydrated as an island only when you
+scroll to it:
+
+<Chart
+  dataKey="lib"
+  series={[{ key: "components", label: "Components", color: "var(--chart-1)" }]}
+  data={[
+    { lib: "shadcn", components: 8 },
+    { lib: "agent", components: 3 },
+    { lib: "charts", components: 1 },
+    { lib: "next…", components: 12 },
+  ]}
+/>
+
+And a Mermaid diagram of the new architecture (client-side island, no Playwright):
+
+<Mermaid chart={`flowchart LR
+  A[Agent] -->|writes .mdx| F[(content/panes)]
+  F -->|hot-reload| D[Astro dev]
+  D --> R[MDX + components prop]
+  R --> UI[shadcn / charts / mermaid]
+`} />
+
+## What's wired right now
+
+| Piece | Status |
+| --- | --- |
+| Astro v6 + MDX + Tailwind v4 | ✅ |
+| shadcn/ui (Nova preset) + Chart | ✅ |
+| Agent components: `Chart`, `Mermaid`, `Callout` | ✅ |
+| Schema-less content collection (`panes/`) | ✅ |
+| New-file hot-reload (Vite watcher plugin) | ✅ |
+
+## The honest open question
+
+The thing this model does **not** give us for free is the **round-trip** — a form
+the user fills that returns a value to the agent. The old Pane had that over its
+WebSocket. Here it'd be Astro Actions/API routes bridged back to the MCP server.
+
+<Callout type="warning" title="Next decision">
+Do we keep the existing MCP server as the write + form-bridge layer (so Astro is
+purely the renderer), or go fully file-based and build a new bridge? That's the
+fork worth deciding before we wire interactivity.
+</Callout>
+
+---
+
+*Open `http://localhost:4321/response` to see this. Edit this file and it
+hot-reloads; add a new `.mdx` and it shows up too.*

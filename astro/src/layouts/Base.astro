@@ -1,0 +1,23 @@
+---
+import "@/styles/global.css";
+const { title = "Pane" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+  </head>
+  <body class="bg-background text-foreground min-h-screen antialiased">
+    <main class="mx-auto max-w-3xl px-6 py-12">
+      <article
+        class="prose prose-neutral dark:prose-invert max-w-none
+               prose-headings:font-semibold prose-pre:bg-muted prose-pre:text-foreground"
+      >
+        <slot />
+      </article>
+    </main>
+  </body>
+</html>

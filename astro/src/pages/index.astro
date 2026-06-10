@@ -1,0 +1,16 @@
+---
+import Shell from "@/layouts/Shell.astro";
+import SessionIndex from "@/components/SessionIndex.tsx";
+import { getSessions } from "@/lib/panes";
+
+const sessions = await getSessions();
+---
+
+<Shell title="Pane — sessions">
+  <h1>Pane</h1>
+  <p class="text-muted-foreground">
+    Pick a session from the left rail, then switch responses on the right.
+    Here's the full overview:
+  </p>
+  <SessionIndex client:load sessions={sessions} />
+</Shell>

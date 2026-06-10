@@ -1,0 +1,62 @@
+---
+import Lab from "@/layouts/Lab.astro";
+
+const styles = [
+  {
+    href: "/lp/gradient-saas",
+    name: "Gradient SaaS",
+    desc: "Vibrant mesh gradients, big type, glow CTAs. Linear/Stripe energy.",
+    chip: "bg-gradient-to-r from-violet-500 to-fuchsia-500",
+  },
+  {
+    href: "/lp/brutalist",
+    name: "Brutalist",
+    desc: "Hard borders, mono type, raw blocks, zero gradients. Gumroad energy.",
+    chip: "bg-yellow-300 border-2 border-black",
+  },
+  {
+    href: "/lp/glass-dark",
+    name: "Glass Dark",
+    desc: "Aurora blobs behind frosted glass cards on near-black. Vercel-at-night.",
+    chip: "bg-slate-900 ring-1 ring-cyan-400/50",
+  },
+  {
+    href: "/lp/editorial",
+    name: "Editorial",
+    desc: "Serif headlines, generous whitespace, magazine rhythm. Calm + premium.",
+    chip: "bg-stone-100 border border-stone-300",
+  },
+];
+---
+
+<Lab title="Landing page lab">
+  <main class="mx-auto max-w-4xl px-6 py-20 text-stone-900">
+    <p class="text-xs font-bold tracking-[0.25em] text-stone-400 uppercase">
+      /lp — landing page lab
+    </p>
+    <h1 class="mt-3 text-5xl font-extrabold tracking-tight">
+      Same offer, four skins.
+    </h1>
+    <p class="mt-4 max-w-xl text-lg text-stone-500">
+      Full-bleed pages outside the pane shell — each one owns its typography,
+      color, and layout. Use the pill at the bottom to flip between styles.
+    </p>
+
+    <div class="mt-12 grid gap-5 sm:grid-cols-2">
+      {
+        styles.map((s) => (
+          <a
+            href={s.href}
+            class="group rounded-2xl border border-stone-200 p-6 transition hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            <div class:list={["h-10 w-10 rounded-lg", s.chip]} />
+            <h2 class="mt-4 text-xl font-bold group-hover:underline">
+              {s.name}
+            </h2>
+            <p class="mt-1 text-sm text-stone-500">{s.desc}</p>
+          </a>
+        ))
+      }
+    </div>
+  </main>
+</Lab>

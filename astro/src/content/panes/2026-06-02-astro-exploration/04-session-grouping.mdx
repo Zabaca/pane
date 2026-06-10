@@ -1,0 +1,74 @@
+---
+title: Session grouping
+---
+
+# 🗃️ Sessions now group responses
+
+Done — and this very file is the proof. It's response **04** inside the session
+`2026-06-02-astro-exploration`. The other three responses moved into the same
+folder, and the home page now shows them grouped.
+
+<Callout type="success" title="Go look">
+Open <a href="/">the index</a> — sessions are collapsible groups (a shadcn
+Accordion island), each with a count badge and its responses listed in order.
+</Callout>
+
+## The model: folder = session, file = response
+
+It maps onto the filesystem with zero new machinery — the glob loader already
+walks nested paths:
+
+```text
+content/panes/
+└── 2026-06-02-astro-exploration/     ← a SESSION (folder)
+    ├── 01-hello.mdx                    ← responses, ordered by filename prefix
+    ├── 02-scaffold-live.mdx
+    ├── 03-structure.mdx
+    └── 04-session-grouping.mdx         ← this file
+```
+
+A file at `<session>/<response>.mdx` gets the id `<session>/<response>` and the
+route `/<session>/<response>` automatically.
+
+<Mermaid chart={`flowchart TD
+  subgraph S["Session = folder (2026-06-02-astro-exploration)"]
+    direction TB
+    R1["01 hello"]
+    R2["02 scaffold-live"]
+    R3["03 structure"]
+    R4["04 session-grouping ← you are here"]
+  end
+  IDX["index.astro"] -->|"groups by folder"| S
+  NEW["next response"] -.->|"append 05-*.mdx"| S
+`} />
+
+## How a response gets "added within" a session
+
+Each time I answer, I write **one new file** into the current session folder with
+the next number prefix. The index re-groups automatically — no registry to
+update, no list to maintain.
+
+| Convention | Rule |
+| --- | --- |
+| Session id | `YYYY-MM-DD-short-slug` (date sorts + stays readable) |
+| Response file | `NN-kebab-title.mdx` — `NN` orders within the session |
+| Title | from frontmatter `title:`; falls back to filename |
+| Ordering | sessions newest-first; responses by numeric prefix |
+
+<Callout type="info" title="Why a date-prefixed folder">
+The date prefix makes sessions sort chronologically and gives each a natural
+human label, while the `NN-` file prefix keeps responses in conversation order
+even though the filesystem is unordered.
+</Callout>
+
+## What this sets up
+
+When we wire the MCP server back in, "start a session" = create a folder, and
+"respond" = write the next `NN-*.mdx` into it. The session view you see now is
+exactly the surface that will fill up live as an agent works.
+
+---
+
+*This pane: `content/panes/2026-06-02-astro-exploration/04-session-grouping.mdx`.
+Index: http://localhost:4321/ · This page:
+http://localhost:4321/2026-06-02-astro-exploration/04-session-grouping*

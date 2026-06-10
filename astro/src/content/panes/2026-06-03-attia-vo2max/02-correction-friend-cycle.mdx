@@ -1,0 +1,89 @@
+---
+title: Correction — checked vs FRIEND (cycle) data
+---
+
+# 🔧 Correction: my earlier bands were too high (and the wrong modality)
+
+I checked response 01's numbers against the PDF you gave me — Kaminsky et al.,
+*Mayo Clinic Proceedings* 2017, the **FRIEND Registry cycle-ergometry** reference
+standards. My illustrative bands don't match it. Here's the honest reconciliation.
+
+<Callout type="error" title="The headline error">
+My chart showed a 40-year-old man's bands as Low 30 → Elite 60. But in this
+paper, even the <strong>90th percentile</strong> for men aged 40–49 is only
+<strong>37.1 mL/kg/min</strong>, and the median (50th) is <strong>27.1</strong>.
+My "Elite 60" sat off the top of the entire table.
+</Callout>
+
+## Why the gap: cycle vs treadmill
+
+This is the crux. The paper is explicit:
+
+> "maximum oxygen consumption values (VO₂max) are approximately **10% to 20%
+> lower when using a cycle ergometer compared with a treadmill**."
+
+Most popular VO2max norms — and the figures Attia tends to cite — come from
+**treadmill** testing (the earlier FRIEND treadmill paper, Kaminsky 2015). So my
+numbers were both **too high** *and* implicitly treadmill-flavored, then I never
+said which modality. Comparing them to this cycle table is apples-to-oranges on
+top of just being inflated.
+
+## The actual data — men 40–49, cycle (Table 3)
+
+<Chart
+  dataKey="pct"
+  series={[{ key: "vo2", label: "VO2max (mL/kg/min), cycle", color: "var(--chart-1)" }]}
+  data={[
+    { pct: "10th", vo2: 20.6 },
+    { pct: "30th", vo2: 24.0 },
+    { pct: "50th", vo2: 27.1 },
+    { pct: "70th", vo2: 30.4 },
+    { pct: "90th", vo2: 37.1 }
+  ]}
+/>
+
+Full column from the paper (men 40–49, cycle, mLO₂/kg/min):
+
+| Percentile | 90 | 80 | 70 | 60 | 50 | 40 | 30 | 20 | 10 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| VO2max | 37.1 | 34.2 | 30.4 | 28.6 | 27.1 | 25.4 | 24.0 | 22.2 | 20.6 |
+
+For women 40–49 (cycle): median **19.4**, 90th **26.2**, 10th **14.6**.
+
+## Translating to treadmill (closer to the usual numbers)
+
+The paper includes a "tm-adj-R" row = **85% of the FRIEND treadmill reference**.
+For men 40–49 that adjusted value is **33.0**, which implies the treadmill
+reference is roughly:
+
+<Callout type="info" title="Back-of-envelope">
+33.0 ÷ 0.85 ≈ <strong>~39 mL/kg/min as the treadmill median (50th) for men
+40–49</strong>. So on a treadmill, ~39 is <em>average</em>, not "below average"
+as I'd labeled 38. My categories were mislabeled by roughly one full band.
+</Callout>
+
+So a fairer treadmill-based picture for a 40-something man: median ≈ high-30s,
+"good" (≈80th) low-to-mid 40s, and the 50–60 range I'd called "high/elite" is
+genuinely **well-trained-to-athlete** territory — not a routine target.
+
+## What the paper *does* confirm
+
+- **~10% decline per decade** — the paper measured 10.0% (men) and 10.3% (women)
+  for relative VO2max across the 20s→70s. My response 01 had this right.
+- **Large sex difference** — men ~30% higher than women here. Right direction.
+- **Steep drop with age** — cycle median for men falls 41.9 (20–29) → 19.5
+  (70–79). Confirmed.
+
+<Callout type="warning" title="So, to answer you directly">
+No — the specific band numbers for a 40-year-old in response 01 were not correct
+against this source. They were inflated and modality-ambiguous. If Foothill is
+using cycle CPX, the numbers above (Table 3) are the ones to anchor to; if
+treadmill, use the FRIEND <em>treadmill</em> paper (Kaminsky 2015), where values
+run ~15% higher. I'd recommend pinning every reported value to its modality.
+</Callout>
+
+---
+
+*Source: Kaminsky LA, Imboden MT, Arena R, Myers J. "Reference Standards for CRF
+Measured With CPX Using Cycle Ergometry: Data From the FRIEND Registry." Mayo
+Clin Proc. 2017;92(2):228–233. · Response 02.*

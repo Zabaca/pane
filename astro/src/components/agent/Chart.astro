@@ -1,0 +1,7 @@
+---
+// Wrapper so MDX can use <Chart/> with no client directive and no import.
+// Hydrates as an island when scrolled into view.
+import BarChart from "./BarChart.tsx";
+const props = Astro.props;
+---
+<BarChart client:visible {...props} />

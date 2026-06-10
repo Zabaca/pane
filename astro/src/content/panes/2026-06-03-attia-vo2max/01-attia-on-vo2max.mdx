@@ -1,0 +1,99 @@
+---
+title: Peter Attia on VO2max
+---
+
+# 🫀 Peter Attia & VO2max
+
+<Callout type="info" title="Quick orientation">
+<strong>Peter Attia</strong> is a physician focused on longevity ("Medicine 3.0"),
+author of <em>Outlive</em> (2023) and host of <em>The Drive</em> podcast.
+<strong>VO2max</strong> is the maximum rate your body can use oxygen during
+all-out exercise — the single best lab measure of cardiorespiratory fitness.
+Attia treats it as one of the most powerful, trainable predictors of how long and
+how well you'll live.
+</Callout>
+
+## Who Attia is
+
+- Stanford MD, surgical training at Johns Hopkins, ex-McKinsey — now centered on
+  **lifespan + healthspan** (how long you live *and* how long you stay capable).
+- His framework leans hard on exercise as the highest-leverage longevity tool,
+  with VO2max and strength/stability as the headline metrics.
+
+## What VO2max actually is
+
+- **Definition:** max oxygen consumption, in **mL of O₂ per kg per minute**
+  (mL/kg/min). The aerobic ceiling.
+- **Physiology:** set by how much oxygenated blood the heart pumps (cardiac
+  output) × how well muscles extract that oxygen (a-vO₂ difference). Both improve
+  with training.
+- **Measured** properly via a graded test to exhaustion with a metabolic cart
+  (CPET); estimated less precisely by wearables and submaximal tests.
+
+## Why Attia fixates on it
+
+<Callout type="success" title="The mortality argument">
+Cardiorespiratory fitness tracks with all-cause mortality more strongly than most
+classic risk factors. Attia frequently cites large cohort data (e.g. Mandsager et
+al., <em>JAMA Network Open</em> 2018, ~122,000 patients) where the least-fit had
+dramatically higher death rates than the fittest — a gap he argues rivals or
+exceeds the risk from smoking, diabetes, or hypertension.
+</Callout>
+
+Two ideas do most of the work:
+
+1. **The biggest gains are at the bottom.** Moving from the *least fit* quartile
+   to merely *below-average* yields the largest relative drop in mortality risk.
+   "The cost of doing nothing" is highest for the unfit.
+2. **VO2max is a reserve you spend over decades.** It declines roughly ~10% per
+   decade after your 30s and faster late in life. Build a high ceiling now and you
+   keep functional independence later — his "**centenarian decathlon**": list the
+   physical things you want to do in your final decade, back-calculate the fitness
+   required, and train for it today.
+
+## A rough picture of the categories
+
+Approximate VO2max bands for a ~40-year-old man (illustrative — real norms vary by
+age, sex, and reference table):
+
+<Chart
+  dataKey="category"
+  series={[{ key: "vo2", label: "VO2max (mL/kg/min)", color: "var(--chart-1)" }]}
+  data={[
+    { category: "Low", vo2: 30 },
+    { category: "Below avg", vo2: 38 },
+    { category: "Above avg", vo2: 45 },
+    { category: "High", vo2: 52 },
+    { category: "Elite", vo2: 60 }
+  ]}
+/>
+
+For reference, elite endurance athletes (cyclists, cross-country skiers) reach
+~70–85+. Attia's practical target is to be in the **top percentiles for your age
+and sex** — chasing a high ceiling for the buffer it buys.
+
+## How he says to train it
+
+<Mermaid chart={`flowchart LR
+  Z["Zone 2 base<br/>~3-4 hrs/week<br/>conversational-but-labored"] --> CAP["raises the floor:<br/>mitochondria, fat oxidation"]
+  V["VO2max intervals<br/>~1x/week<br/>e.g. Norwegian 4x4"] --> CEIL["raises the ceiling:<br/>peak aerobic power"]
+  CAP --> FIT["higher, more durable VO2max"]
+  CEIL --> FIT
+`} />
+
+- **Zone 2** (most of the volume): steady aerobic work at a pace you can barely
+  hold a conversation through — builds the aerobic base.
+- **VO2max intervals** (about once a week): hard efforts near max, classically the
+  **4×4** — 4 minutes near-max, 4 minutes easy, repeated ~4 times.
+
+<Callout type="warning" title="Accuracy caveat">
+The framing here is solid and reflects Attia's well-known positions, but the
+specific numbers — hazard ratios, the exact VO2max bands, the precise decline
+rate — are from memory and rounded. Treat them as directional. For anything you'd
+act on or quote, check <em>Outlive</em> or the primary studies directly, and get a
+real test rather than trusting an estimate.
+</Callout>
+
+---
+
+*Session: <code>2026-06-03-attia-vo2max</code> · Response 01*

@@ -1,0 +1,53 @@
+---
+// Bare full-bleed layout for landing-page experiments.
+// No pane shell, no prose typography — pages own 100% of their styling.
+import "@/styles/global.css";
+
+interface Props {
+  title?: string;
+  theme?: "light" | "dark";
+}
+const { title = "Lab", theme = "light" } = Astro.props;
+
+const variants = [
+  { href: "/lp", label: "Index" },
+  { href: "/lp/gradient-saas", label: "Gradient" },
+  { href: "/lp/brutalist", label: "Brutalist" },
+  { href: "/lp/glass-dark", label: "Glass" },
+  { href: "/lp/editorial", label: "Editorial" },
+];
+const current = Astro.url.pathname.replace(/\/$/, "") || "/lp";
+---
+
+<!doctype html>
+<html lang="en" class:list={[theme === "dark" && "dark"]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen antialiased">
+    <slot />
+
+    <!-- floating style switcher -->
+    <nav
+      class="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-1 rounded-full border border-black/10 bg-white/80 px-2 py-1.5 shadow-xl backdrop-blur-md"
+    >
+      {
+        variants.map((v) => (
+          <a
+            href={v.href}
+            class:list={[
+              "rounded-full px-3 py-1 text-xs font-semibold transition",
+              current === v.href
+                ? "bg-black text-white"
+                : "text-black/60 hover:bg-black/5",
+            ]}
+          >
+            {v.label}
+          </a>
+        ))
+      }
+    </nav>
+  </body>
+</html>

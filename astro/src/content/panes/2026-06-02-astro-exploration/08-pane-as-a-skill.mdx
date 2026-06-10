@@ -1,0 +1,98 @@
+---
+title: Packaging the app + skill as one distributable
+---
+
+# 📦 Yes — and it's a genuinely nice packaging idea, with one required split
+
+This fuses response 07's routing skill with the renderer into a single unit you
+`install` and get both the *guidance* and the *surface*. The big win: the skill
+that describes the conventions and the app that implements them **can't drift**,
+because they ship together. The catch: you must separate **distributable code**
+from **writable session data**, or skill updates will eat people's panes.
+
+<Callout type="warning" title="The one hard rule">
+Never write session content <em>into</em> the skill directory. Plugin/skill
+installs often live in a managed cache that's read-only or wiped on update. The
+app is shippable & versioned; the panes are user data and must live elsewhere.
+</Callout>
+
+## The shape
+
+<Mermaid chart={`flowchart TD
+  subgraph SKILL["skills/pane/  (distributable, versioned, read-only)"]
+    SM["SKILL.md<br/>routing rubric + conventions"]
+    APP["app/  (Astro source: src, config, package.json, lockfile)"]
+    BOOT["scripts/bootstrap.sh"]
+  end
+  subgraph RUNTIME["~/.pane/  (writable runtime — NOT shipped)"]
+    COPY["app copy + node_modules"]
+    CONTENT["content/panes/&lt;session&gt;/NN-*.mdx"]
+  end
+  BOOT -->|"first run: copy app, bun install"| COPY
+  BOOT -->|"start astro dev, print URL"| DEV["localhost:4321"]
+  SM -->|"I write responses into"| CONTENT
+  CONTENT -.->|"glob loader reads"| COPY
+`} />
+
+## What lives where
+
+| Concern | Location | Shipped? | Writable? |
+| --- | --- | --- | --- |
+| Routing rubric + conventions | `skills/pane/SKILL.md` | ✅ | no |
+| Astro source + components + lockfile | `skills/pane/app/` | ✅ | no |
+| Bootstrap script | `skills/pane/scripts/` | ✅ | no |
+| `node_modules` | runtime dir | ❌ (install on first run) | — |
+| Session content (`*.mdx`) | runtime dir e.g. `~/.pane/` | ❌ | ✅ |
+
+## How a bootstrap would go
+
+1. Skill invoked → check runtime dir. If absent: copy `app/` out, `bun install`.
+2. Point Astro's content loader at the **runtime** `content/panes/` (env var or a
+   symlink), not the one inside the skill.
+3. Start `astro dev` in the background if not already up; return the URL.
+4. From then on, "respond" = write the next `NN-*.mdx` into the active session.
+
+<Callout type="info" title="Why copy-out instead of run-in-place">
+Running in place means writing into the install dir (fragile, update-unsafe) and
+makes <code>node_modules</code> part of the package (huge). Copy-out keeps the
+shipped artifact tiny — just source — and isolates per-user state.
+</Callout>
+
+## Distribution mechanics
+
+- A skill dir can bundle arbitrary files, so a full Astro source tree is fine.
+- Ship **source + lockfile**, never `node_modules` — deps install on first run.
+- Distributable via a plugin marketplace (git-backed) or just copied into
+  `.claude/skills/`. Co-location is the whole point: one `git pull` updates both
+  the rubric and the renderer in lockstep.
+
+## The honest caveats
+
+<Callout type="warning" title="Three things that make this non-trivial">
+1. <strong>Process lifecycle.</strong> A long-running <code>astro dev</code> isn't
+   a natural fit for skill invocations (which are momentary). Something has to own
+   start/stop/health — a small wrapper, not the skill itself.<br/>
+2. <strong>First-run latency.</strong> <code>bun install</code> + dev boot is a
+   one-time wait the skill must handle gracefully (and tell the user about).<br/>
+3. <strong>The round-trip still isn't solved.</strong> Bundling makes
+   <em>output</em> turnkey; input back to me remains the open problem from
+   responses 02 and 06.
+</Callout>
+
+## My take
+
+<Callout type="success" title="Worth it — and it reframes Pane">
+This turns Pane from "an MCP server you add" into "a skill that brings its own
+UI." That's a cleaner install story (no <code>mcp add</code>, no separate
+server) and guarantees the conventions match the renderer. I'd build it as:
+<strong>skill = app template + rubric</strong>, <strong>runtime = copied app +
+content</strong>. Do the content/runtime split from day one; retrofitting it
+after people have panes is painful.
+</Callout>
+
+It also subsumes response 07: the routing skill and the rendering app become the
+same deliverable, which is probably how it should have been framed all along.
+
+---
+
+*Response 08 · `content/panes/2026-06-02-astro-exploration/08-pane-as-a-skill.mdx`*

@@ -1,0 +1,79 @@
+---
+title: A skill to route terminal vs pane
+---
+
+# 🧠 Yes — and it should be a *decision rubric*, not a renderer
+
+The skill shouldn't know how to write MDX (that's just my normal capability). Its
+job is the judgment call I sketched in response 06: **given what I'm about to say,
+where should it go?** Encode the heuristic so it's consistent instead of vibes.
+
+## What the skill encodes
+
+<Callout type="info" title="Core idea">
+A skill named something like <code>respond-surface</code> that fires before I
+answer and classifies the response into <strong>terminal</strong>,
+<strong>pane</strong>, or <strong>both</strong> — then tells me the pane
+conventions (session folder, NN- prefix, which components exist).
+</Callout>
+
+## The decision rubric (the heart of it)
+
+| Signal | Lean terminal | Lean pane |
+| --- | --- | --- |
+| Length | 1–3 lines | sections, multiple ideas |
+| Visual payload | none | diagram, chart, table, comparison |
+| Durability | throwaway / status | worth revisiting later |
+| Structure | linear prose | grouped / component-shaped |
+| Your intent | "quick q" | "show me", "explain", "design" |
+
+A response that trips **two or more** "lean pane" signals → pane. Otherwise
+terminal. Decisions-needing-your-input → pane to present, terminal to confirm
+(until the round-trip exists).
+
+<Mermaid chart={`flowchart TD
+  A["about to respond"] --> S["respond-surface skill"]
+  S --> C{"score the rubric"}
+  C -->|"< 2 pane signals"| T["terminal: answer inline"]
+  C -->|">= 2 pane signals"| P["pane: write NN-*.mdx<br/>in active session"]
+  C -->|"needs your choice"| B["pane shows options +<br/>terminal one-liner"]
+  P --> R["reply here with just the link"]
+`} />
+
+## What the skill would bundle
+
+- **The rubric above**, as explicit triggers (so it's not re-litigated each turn).
+- **Pane mechanics**: active session folder, `NN-` ordering, frontmatter `title`,
+  and the registered component list (`Chart`, `Mermaid`, `Callout`, `Card`…).
+- **The anti-pattern guardrail** from response 06: *don't bury a one-line answer
+  in ceremony* — match pane weight to answer weight.
+- **Output discipline**: when it routes to a pane, my terminal reply collapses to
+  a single link. No double-responding.
+
+## Honest caveats
+
+<Callout type="warning" title="Two risks">
+1. <strong>Over-triggering</strong> — a skill that's too eager turns every "yes"
+   into a file. The rubric must bias toward terminal for trivia.<br/>
+2. <strong>Staleness</strong> — if it hardcodes the component list, it drifts as
+   we add components. Better: point it at <code>[...slug].astro</code> as the
+   source of truth rather than duplicating the list.
+</Callout>
+
+## Where it'd live
+
+A project skill in `.claude/skills/` of the Pane repo, so it travels with the
+code and the conventions stay co-located with what they describe. It pairs
+naturally with a future `new-session` / `respond` skill that does the actual file
+writes once the MCP server is back in the loop.
+
+<Callout type="success" title="My take">
+Worth building — but <em>after</em> the round-trip lands. Right now the routing is
+simple enough to hold in my head; the skill earns its keep once panes become
+interactive and the conventions (sessions, inputs, components) are too many to
+apply by feel.
+</Callout>
+
+---
+
+*Response 07 · `content/panes/2026-06-02-astro-exploration/07-a-routing-skill.mdx`*
