@@ -87,6 +87,10 @@ cd frontend
 bun run dev
 ```
 
+## Testing
+
+This repo is used for Fredrin rollout verification.
+
 ## License
 
 MIT
