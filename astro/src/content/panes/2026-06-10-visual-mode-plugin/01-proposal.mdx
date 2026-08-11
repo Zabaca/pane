@@ -1,0 +1,120 @@
+---
+title: visual-mode as a plugin — design proposal
+---
+
+# 🔌 `/visual-mode` as an agent-tools plugin
+
+The idea is right, and plugins are exactly the right delivery mechanism. The one
+real architecture decision is **where the astro app lives**. Everything else
+falls out of that.
+
+## What we're packaging
+
+The three things you like map cleanly to artifacts:
+
+| You like | Artifact | Portable? |
+| --- | --- | --- |
+| Structured output | MDX panes + session folders + Shell layout | ✅ template |
+| Out-of-bounds freedom | `Lab.astro` + `/lp/*.astro` full-bleed pages | ✅ template |
+| Markdown + components + UI lib | component registry in `[...slug].astro` (Callout, Card, Mermaid, Chart…) | ✅ template |
+
+## The decision: where does the astro app live?
+
+<Mermaid chart={`flowchart LR
+  subgraph A["Option A — scaffold per repo (recommended)"]
+    P1["plugin holds a template/"] -->|"/visual-mode first run<br/>copies + bun install"| R1[".visual/ inside the repo"]
+    R1 --> S1["panes + pages live<br/>WITH the project"]
+  end
+  subgraph B["Option B — one central app"]
+    P2["plugin holds the app itself"] -->|"symlinks content dirs<br/>per repo"| R2["repo only has .visual/panes/"]
+  end
+`} />
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 not-prose my-6">
+  <div className="rounded-xl border-2 border-emerald-300 bg-emerald-50/50 p-5">
+    <div className="font-bold">A · Scaffold into each repo ✅</div>
+    <ul className="text-sm mt-2 space-y-1.5 text-slate-600">
+      <li>✅ Panes can <strong>import that repo's own code</strong> — visualize its real components/data</li>
+      <li>✅ Full-bleed <code>.astro</code> pages work natively (pages must live in the app)</li>
+      <li>✅ Content versioned with the project</li>
+      <li>✅ Dumb and debuggable — it's just an app in a folder</li>
+      <li>⚠️ Drift: template improvements don't auto-propagate (mitigate: <code>/visual-mode update</code> later)</li>
+      <li>⚠️ ~1 min scaffold + node_modules per repo (bun makes this cheap)</li>
+    </ul>
+  </div>
+  <div className="rounded-xl border border-slate-200 p-5">
+    <div className="font-bold">B · One central app, symlinked content</div>
+    <ul className="text-sm mt-2 space-y-1.5 text-slate-600">
+      <li>✅ Zero scaffold, one app to maintain</li>
+      <li>❌ Symlinked <code>src/pages/</code> + Tailwind <code>@source</code> across symlinks is fiddly (we already hit a stale-scan bug <em>without</em> symlinks)</li>
+      <li>❌ Can't import the host repo's code</li>
+      <li>❌ One repo's experiment can break every repo's visual mode</li>
+    </ul>
+  </div>
+</div>
+
+## Plugin shape in `~/Projects/zabaca/agent-tools`
+
+```
+agent-tools/
+├── .claude-plugin/
+│   └── marketplace.json          # agent-tools is itself a local marketplace
+└── plugins/
+    └── visual-mode/
+        ├── .claude-plugin/plugin.json
+        ├── skills/
+        │   └── visual-mode/
+        │       ├── SKILL.md      # the brain — see below
+        │       └── scripts/
+        │           ├── bootstrap.sh   # copy template → .visual/, bun install
+        │           └── start.sh       # pick port, start dev server
+        └── template/             # the pane astro app, minus node_modules
+            ├── package.json
+            ├── astro.config.mjs
+            └── src/ (Shell, Lab, components/, [...slug].astro, lp/)
+```
+
+Install once: `/plugin marketplace add ~/Projects/zabaca/agent-tools`
+Per repo: `/plugin install visual-mode@agent-tools` (project scope).
+
+## What `/visual-mode` does when invoked
+
+<Mermaid chart={`flowchart TD
+  S["/visual-mode"] --> E{".visual/ exists?"}
+  E -- no --> B["bootstrap: copy template,<br/>bun install, write .visual/README"]
+  E -- yes --> P
+  B --> P["pick deterministic port<br/>(hash of repo path → 4300-5300)"]
+  P --> D["start dev server in background"]
+  D --> I["inject context to agent:<br/>• content dir + conventions<br/>• component registry list<br/>• /lp escape hatch<br/>• verify-render checklist"]
+`} />
+
+The SKILL.md carries the **agent instructions** — the stuff I currently know
+only because we built it together:
+
+- Session folders: `src/content/panes/YYYY-MM-DD-topic/NN-name.mdx`, frontmatter `title:`
+- No-import components: `Callout, Card*, Badge, Separator, Chart, Mermaid` + Tailwind v4
+- Out-of-bounds: full-bleed `.astro` pages under `src/pages/lp/` using `Lab.astro`
+- **Verify renders with a signature-class grep, not just a 200** (the stale-scan gotcha) — and restart the server if new files render unstyled
+- Deterministic port → multiple repos can run visual mode simultaneously
+
+<Callout type="info" title="Why a skill beats baking it into CLAUDE.md">
+The skill loads on demand (<code>/visual-mode</code>), carries its own scripts, and
+travels with the plugin — every repo gets the same behavior without copy-pasting
+instructions into each CLAUDE.md. CLAUDE.md stays clean; the plugin owns the
+contract.
+</Callout>
+
+## Open questions before building
+
+1. **Commit `.visual/` or gitignore it?** I'd commit it (minus node_modules) — panes become reviewable artifacts of the project. But for client repos you may want it gitignored.
+2. **Directory name** — `.visual/`? `pane/`? `.pane/`? Hidden keeps repos clean; visible makes it discoverable.
+3. **Does this repo (zabaca/pane) become the template source**, with agent-tools vendoring a copy — or does the template move to agent-tools and pane becomes just another consumer?
+
+<Callout type="success" title="My recommendation">
+Option A (scaffold-per-repo), commit <code>.visual/</code>, template lives in
+agent-tools (pane repo becomes the upstream playground where new components get
+proven before promotion into the template). Build the plugin with bootstrap +
+start scripts and a rich SKILL.md.
+</Callout>
+
+*Session <code>2026-06-10-visual-mode-plugin</code>*

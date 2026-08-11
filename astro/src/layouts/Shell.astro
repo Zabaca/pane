@@ -1,0 +1,112 @@
+---
+import "@/styles/global.css";
+import { getSessions } from "@/lib/panes";
+
+interface Props {
+  title?: string;
+  activeId?: string;
+}
+const { title = "Pane", activeId } = Astro.props;
+
+const sessions = await getSessions();
+const activeSession =
+  sessions.find((s) => s.panes.some((p) => p.id === activeId)) ?? null;
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+  </head>
+  <body class="bg-background text-foreground min-h-screen antialiased">
+    <div class="mx-auto flex min-h-screen max-w-[1400px]">
+      <!-- LEFT RAIL: sessions -->
+      <aside
+        class="bg-card/40 sticky top-0 hidden h-screen w-56 shrink-0 overflow-y-auto border-r px-3 py-5 md:block"
+      >
+        <a href="/" class="mb-4 block px-2 text-lg font-semibold">Pane</a>
+        <p class="text-muted-foreground mb-2 px-2 text-xs tracking-wide uppercase">
+          Sessions
+        </p>
+        <nav class="space-y-0.5">
+          {
+            sessions.map((s) => {
+              const active = s.slug === activeSession?.slug;
+              return (
+                <a
+                  href={s.panes[0]?.href ?? "/"}
+                  class:list={[
+                    "block rounded-md px-2 py-1.5 text-sm",
+                    active
+                      ? "bg-accent text-accent-foreground font-medium"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  ]}
+                >
+                  <span class="block truncate">{s.title}</span>
+                  {s.date && (
+                    <span class="text-muted-foreground/70 block text-[11px]">
+                      {s.date} · {s.panes.length} response{s.panes.length === 1 ? "" : "s"}
+                    </span>
+                  )}
+                </a>
+              );
+            })
+          }
+        </nav>
+      </aside>
+
+      <!-- CENTER: content -->
+      <main class="min-w-0 flex-1 px-6 py-10 lg:px-12">
+        <article
+          class="prose prose-neutral dark:prose-invert mx-auto max-w-3xl
+                 prose-headings:font-semibold prose-pre:bg-muted prose-pre:text-foreground"
+        >
+          <slot />
+        </article>
+      </main>
+
+      <!-- RIGHT RAIL: responses in the active session -->
+      <aside
+        class="bg-card/40 sticky top-0 hidden h-screen w-60 shrink-0 overflow-y-auto border-l px-3 py-5 lg:block"
+      >
+        {
+          activeSession ? (
+            <>
+              <p class="text-muted-foreground mb-2 px-2 text-xs tracking-wide uppercase">
+                Responses
+              </p>
+              <p class="mb-3 px-2 text-sm font-medium">{activeSession.title}</p>
+              <nav class="space-y-0.5">
+                {activeSession.panes.map((p) => {
+                  const active = p.id === activeId;
+                  return (
+                    <a
+                      href={p.href}
+                      class:list={[
+                        "flex items-baseline gap-2 rounded-md px-2 py-1.5 text-sm",
+                        active
+                          ? "bg-accent text-accent-foreground font-medium"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      ]}
+                    >
+                      <span class="tabular-nums text-[11px] opacity-60">
+                        {p.order.split("-")[0]}
+                      </span>
+                      <span class="truncate">{p.title}</span>
+                    </a>
+                  );
+                })}
+              </nav>
+            </>
+          ) : (
+            <p class="text-muted-foreground px-2 text-sm">
+              Select a session to see its responses.
+            </p>
+          )
+        }
+      </aside>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,82 @@
+---
+title: SaaS free-trial landing page
+---
+
+# 🚀 Variant 1 — SaaS free-trial
+
+<div className="not-prose rounded-2xl overflow-hidden border border-slate-200 shadow-sm my-6">
+
+  {/* Nav */}
+  <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-100">
+    <div className="font-bold text-slate-900">◢ Flowdesk</div>
+    <div className="hidden sm:flex gap-6 text-sm text-slate-500">
+      <span>Product</span><span>Pricing</span><span>Docs</span>
+    </div>
+    <button className="text-sm font-semibold bg-slate-900 text-white px-4 py-2 rounded-lg">Start free</button>
+  </div>
+
+  {/* Hero */}
+  <div className="px-6 py-14 bg-gradient-to-b from-indigo-50 to-white text-center">
+    <span className="inline-block text-xs font-semibold tracking-wide text-indigo-600 bg-indigo-100 px-3 py-1 rounded-full mb-5">NEW · AI-assisted workflows</span>
+    <h2 className="text-4xl font-extrabold text-slate-900 leading-tight max-w-2xl mx-auto">Ship customer workflows in days, not quarters</h2>
+    <p className="text-lg text-slate-500 mt-4 max-w-xl mx-auto">The visual automation layer your ops team actually wants. No code, no waiting on engineering.</p>
+    <div className="flex flex-col sm:flex-row gap-3 justify-center mt-7">
+      <button className="bg-indigo-600 text-white font-semibold px-7 py-3 rounded-xl shadow-lg shadow-indigo-200">Start free — 14 days</button>
+      <button className="bg-white text-slate-700 font-semibold px-7 py-3 rounded-xl border border-slate-200">Book a demo</button>
+    </div>
+    <p className="text-xs text-slate-400 mt-3">No credit card · Cancel anytime · SOC 2 compliant</p>
+
+    {/* Product shot placeholder */}
+    <div className="mt-10 mx-auto max-w-2xl aspect-video rounded-xl bg-white border border-slate-200 shadow-2xl shadow-indigo-100 flex items-center justify-center text-slate-300 text-sm">
+      ▸ product screenshot / demo loop
+    </div>
+  </div>
+
+  {/* Social proof */}
+  <div className="px-6 py-8 bg-white border-t border-slate-100">
+    <p className="text-center text-xs uppercase tracking-widest text-slate-400 mb-4">Trusted by teams at</p>
+    <div className="flex flex-wrap justify-center gap-8 text-slate-400 font-semibold">
+      <span>Acme</span><span>Globex</span><span>Initech</span><span>Umbrella</span><span>Hooli</span>
+    </div>
+  </div>
+
+  {/* 3 benefits */}
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 px-6 py-12 bg-slate-50">
+    {[
+      {i:"⚡",t:"Live in an afternoon",d:"Templates and a drag-drop builder get you to value fast."},
+      {i:"🔌",t:"100+ integrations",d:"Connect the tools you already run on, no glue code."},
+      {i:"📈",t:"See ROI in week one",d:"Built-in analytics show time saved per workflow."},
+    ].map(b => (
+      <div key={b.t} className="text-center">
+        <div className="text-3xl">{b.i}</div>
+        <div className="font-semibold text-slate-900 mt-2">{b.t}</div>
+        <p className="text-sm text-slate-500 mt-1">{b.d}</p>
+      </div>
+    ))}
+  </div>
+
+  {/* Closing CTA */}
+  <div className="px-6 py-12 bg-slate-900 text-center">
+    <h3 className="text-2xl font-bold text-white">Your first workflow is free</h3>
+    <button className="mt-5 bg-indigo-500 text-white font-semibold px-7 py-3 rounded-xl">Start free — 14 days</button>
+  </div>
+</div>
+
+## Why it converts
+
+<Callout type="success" title="Conversion principles in play">
+<strong>One promise, one CTA color.</strong> Indigo is reserved for the primary
+action everywhere — nothing competes. <strong>Risk reversal</strong> ("no credit
+card") sits directly under the button where hesitation happens. <strong>Proof
+above the fold</strong> (logos) borrows trust before asking. The CTA repeats at the
+end so scrollers don't have to scroll back.
+</Callout>
+
+| Element | Conversion job |
+| --- | --- |
+| Benefit headline (not feature) | Answers "what's in it for me" in 1s |
+| Single dominant CTA, repeated | Removes choice paralysis |
+| "No credit card" micro-copy | Lowers perceived risk at the click |
+| Logo bar | Social proof before the pitch |
+
+[← All variants](/2026-06-08-landing-pages/01-overview) · [Next: Waitlist →](/2026-06-08-landing-pages/03-waitlist)

@@ -1,0 +1,113 @@
+---
+import Lab from "@/layouts/Lab.astro";
+---
+
+<Lab title="SHIPFAST — Brutalist">
+  <div class="min-h-screen bg-[#f5f1e8] font-mono text-black">
+    <!-- nav -->
+    <header class="flex items-center justify-between border-b-4 border-black px-6 py-4">
+      <div class="text-xl font-black tracking-tighter uppercase">Shipfast™</div>
+      <nav class="hidden gap-6 text-sm font-bold uppercase sm:flex">
+        <span class="underline decoration-2 underline-offset-4">Work</span>
+        <span>Pricing</span>
+        <span>FAQ</span>
+      </nav>
+      <button class="border-2 border-black bg-yellow-300 px-4 py-2 text-sm font-black uppercase shadow-[4px_4px_0_0_#000] transition active:translate-x-1 active:translate-y-1 active:shadow-none">
+        Buy now
+      </button>
+    </header>
+
+    <!-- hero -->
+    <section class="border-b-4 border-black px-6 py-20">
+      <div class="mx-auto max-w-4xl">
+        <p class="inline-block border-2 border-black bg-pink-400 px-3 py-1 text-xs font-black uppercase">★ 4.9 from 2,118 devs</p>
+        <h1 class="mt-6 text-6xl leading-[0.95] font-black tracking-tighter uppercase sm:text-8xl">
+          Ship your<br />startup<br />
+          <span class="bg-yellow-300 px-2">this weekend.</span>
+        </h1>
+        <p class="mt-8 max-w-xl text-lg leading-relaxed">
+          The Next.js boilerplate with auth, payments, and emails wired up.
+          Stop rebuilding the same plumbing. Start charging money.
+        </p>
+        <div class="mt-10 flex flex-col gap-4 sm:flex-row">
+          <button class="border-4 border-black bg-black px-8 py-4 text-lg font-black text-white uppercase shadow-[8px_8px_0_0_#facc15] transition active:translate-x-2 active:translate-y-2 active:shadow-none">
+            Get Shipfast → $169
+          </button>
+          <div class="flex items-center gap-2 text-sm font-bold">
+            <span class="line-through opacity-50">$249</span>
+            <span class="border-2 border-black bg-green-400 px-2 py-0.5">$80 OFF ends Friday</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- marquee strip -->
+    <div class="overflow-hidden border-b-4 border-black bg-black py-3">
+      <p class="text-center text-sm font-black tracking-[0.2em] whitespace-nowrap text-yellow-300 uppercase">
+        Auth ✦ Stripe ✦ Emails ✦ SEO ✦ Database ✦ Auth ✦ Stripe ✦ Emails ✦ SEO ✦ Database
+      </p>
+    </div>
+
+    <!-- features grid -->
+    <section class="border-b-4 border-black">
+      <div class="mx-auto grid max-w-4xl sm:grid-cols-3">
+        {
+          [
+            ["⏱", "8 HRS SAVED", "Auth + OAuth flows, done"],
+            ["💳", "12 HRS SAVED", "Stripe checkout + webhooks"],
+            ["📬", "4 HRS SAVED", "Transactional emails wired"],
+          ].map(([icon, title, desc], i) => (
+            <div
+              class:list={[
+                "border-black p-8",
+                i < 2 && "sm:border-r-4",
+                "border-b-4 sm:border-b-0",
+              ]}
+            >
+              <div class="text-4xl">{icon}</div>
+              <h3 class="mt-4 text-xl font-black">{title}</h3>
+              <p class="mt-2 text-sm">{desc}</p>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- testimonial -->
+    <section class="border-b-4 border-black bg-pink-400 px-6 py-16">
+      <blockquote class="mx-auto max-w-3xl">
+        <p class="text-2xl leading-snug font-black uppercase sm:text-3xl">
+          "Launched in 6 days. First customer in 9. This thing prints time."
+        </p>
+        <footer class="mt-6 flex items-center gap-3">
+          <div class="h-12 w-12 border-2 border-black bg-yellow-300"></div>
+          <div class="text-sm font-bold">
+            MARC L. — INDIE HACKER<br />
+            <span class="font-normal">$14k MRR in 4 months</span>
+          </div>
+        </footer>
+      </blockquote>
+    </section>
+
+    <!-- pricing / final CTA -->
+    <section class="px-6 py-20 pb-32 text-center">
+      <h2 class="text-4xl font-black tracking-tighter uppercase sm:text-5xl">One price. Everything in.</h2>
+      <div class="mx-auto mt-10 max-w-md border-4 border-black bg-white p-8 text-left shadow-[12px_12px_0_0_#000]">
+        <div class="flex items-baseline gap-3">
+          <span class="text-5xl font-black">$169</span>
+          <span class="text-lg line-through opacity-40">$249</span>
+        </div>
+        <ul class="mt-6 space-y-2 text-sm font-bold">
+          <li>✓ Next.js 15 + TypeScript boilerplate</li>
+          <li>✓ Auth, Stripe, emails, SEO, DB</li>
+          <li>✓ Lifetime updates</li>
+          <li>✓ Discord community access</li>
+        </ul>
+        <button class="mt-8 w-full border-4 border-black bg-yellow-300 px-6 py-4 text-lg font-black uppercase shadow-[6px_6px_0_0_#000] transition active:translate-x-1.5 active:translate-y-1.5 active:shadow-none">
+          Get instant access
+        </button>
+        <p class="mt-3 text-center text-xs">30-day money-back. No questions.</p>
+      </div>
+    </section>
+  </div>
+</Lab>

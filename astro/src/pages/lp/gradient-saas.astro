@@ -1,0 +1,99 @@
+---
+import Lab from "@/layouts/Lab.astro";
+---
+
+<Lab title="Flowdesk — Gradient SaaS">
+  <div class="relative min-h-screen overflow-hidden bg-[#0a0118] text-white">
+    <!-- mesh gradient blobs -->
+    <div class="pointer-events-none absolute -top-40 -left-40 h-[34rem] w-[34rem] rounded-full bg-violet-600/40 blur-[120px]"></div>
+    <div class="pointer-events-none absolute top-20 -right-40 h-[30rem] w-[30rem] rounded-full bg-fuchsia-500/30 blur-[120px]"></div>
+    <div class="pointer-events-none absolute bottom-0 left-1/3 h-[24rem] w-[24rem] rounded-full bg-indigo-500/30 blur-[120px]"></div>
+
+    <!-- nav -->
+    <header class="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+      <div class="text-lg font-bold">◢ Flowdesk</div>
+      <nav class="hidden gap-8 text-sm text-white/60 sm:flex">
+        <span>Product</span><span>Pricing</span><span>Changelog</span>
+      </nav>
+      <button class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-violet-950">Start free</button>
+    </header>
+
+    <!-- hero -->
+    <section class="relative z-10 mx-auto max-w-4xl px-6 pt-24 pb-20 text-center">
+      <span class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-medium text-white/70 backdrop-blur">
+        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-fuchsia-400"></span>
+        Flowdesk 3.0 is here
+      </span>
+
+      <h1 class="mt-8 bg-gradient-to-br from-white via-white to-violet-300 bg-clip-text text-6xl leading-[1.05] font-extrabold tracking-tight text-transparent sm:text-7xl">
+        Workflows at the speed of thought
+      </h1>
+      <p class="mx-auto mt-6 max-w-xl text-lg text-white/60">
+        The automation layer for modern ops teams. Build, test, and ship
+        customer workflows before your standup ends.
+      </p>
+
+      <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <button class="rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-8 py-3.5 text-base font-bold shadow-[0_0_40px_-8px] shadow-fuchsia-500/60 transition hover:shadow-[0_0_60px_-8px] hover:shadow-fuchsia-500/80">
+          Start building — free
+        </button>
+        <button class="rounded-xl border border-white/15 bg-white/5 px-8 py-3.5 text-base font-semibold text-white/80 backdrop-blur">
+          Watch 2-min demo
+        </button>
+      </div>
+      <p class="mt-4 text-xs text-white/40">No credit card · 14-day Pro trial · SOC 2 Type II</p>
+
+      <!-- product frame -->
+      <div class="mt-16 rounded-2xl border border-white/10 bg-white/5 p-2 backdrop-blur">
+        <div class="flex aspect-video items-center justify-center rounded-xl bg-gradient-to-br from-violet-950 to-[#150a2e] text-sm text-white/30">
+          ▸ product UI screenshot
+        </div>
+      </div>
+    </section>
+
+    <!-- logos -->
+    <section class="relative z-10 border-t border-white/5 py-10">
+      <p class="text-center text-[11px] tracking-[0.3em] text-white/30 uppercase">Powering ops at</p>
+      <div class="mt-5 flex flex-wrap justify-center gap-10 text-white/40">
+        <span class="font-semibold">Acme</span><span class="font-semibold">Globex</span>
+        <span class="font-semibold">Initech</span><span class="font-semibold">Hooli</span>
+        <span class="font-semibold">Umbrella</span>
+      </div>
+    </section>
+
+    <!-- bento features -->
+    <section class="relative z-10 mx-auto max-w-6xl px-6 py-20">
+      <h2 class="text-center text-3xl font-bold sm:text-4xl">Everything ops needs, nothing it doesn't</h2>
+      <div class="mt-12 grid gap-4 sm:grid-cols-3">
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur sm:col-span-2">
+          <div class="text-2xl">⚡</div>
+          <h3 class="mt-3 text-lg font-bold">Visual builder with real code underneath</h3>
+          <p class="mt-1 text-sm text-white/50">Drag, drop, then eject to TypeScript whenever you outgrow the canvas. No lock-in, ever.</p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+          <div class="text-2xl">🔌</div>
+          <h3 class="mt-3 text-lg font-bold">100+ integrations</h3>
+          <p class="mt-1 text-sm text-white/50">Native connectors, webhooks for the rest.</p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+          <div class="text-2xl">🛡️</div>
+          <h3 class="mt-3 text-lg font-bold">Audit-grade logs</h3>
+          <p class="mt-1 text-sm text-white/50">Every run, every retry, every diff — kept forever.</p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur sm:col-span-2">
+          <div class="text-2xl">📈</div>
+          <h3 class="mt-3 text-lg font-bold">ROI dashboard your CFO will screenshot</h3>
+          <p class="mt-1 text-sm text-white/50">Hours saved per workflow, per team, per quarter — calculated automatically.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- final CTA -->
+    <section class="relative z-10 px-6 pt-8 pb-28 text-center">
+      <h2 class="text-4xl font-extrabold">Ship your first workflow today</h2>
+      <button class="mt-8 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-10 py-4 text-lg font-bold shadow-[0_0_50px_-8px] shadow-fuchsia-500/60">
+        Start building — free
+      </button>
+    </section>
+  </div>
+</Lab>

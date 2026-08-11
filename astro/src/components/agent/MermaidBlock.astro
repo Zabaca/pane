@@ -1,0 +1,6 @@
+---
+// Wrapper so MDX can use <Mermaid chart={`...`} /> with no client directive.
+import Mermaid from "./Mermaid.tsx";
+const { chart } = Astro.props;
+---
+<Mermaid client:visible chart={chart} />

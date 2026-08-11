@@ -1,0 +1,51 @@
+---
+import { getCollection, render } from "astro:content";
+import Shell from "@/layouts/Shell.astro";
+
+// Agent-facing components — available inside MDX with NO imports.
+import Chart from "@/components/agent/Chart.astro";
+import Mermaid from "@/components/agent/MermaidBlock.astro";
+import Callout from "@/components/agent/Callout.tsx";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+
+export async function getStaticPaths() {
+  const panes = await getCollection("panes");
+  return panes.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+// The registry the agent can rely on. Add to this as standard components emerge.
+const components = {
+  Chart,
+  Mermaid,
+  Callout,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+  Badge,
+  Separator,
+};
+
+const title = (entry.data as Record<string, unknown>)?.title as string | undefined;
+---
+
+<Shell title={title ?? entry.id} activeId={entry.id}>
+  <Content components={components} />
+</Shell>

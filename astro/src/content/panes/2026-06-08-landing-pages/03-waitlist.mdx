@@ -1,0 +1,58 @@
+---
+title: Waitlist / lead-magnet landing page
+---
+
+# 📩 Variant 2 — Waitlist / lead magnet
+
+<div className="not-prose rounded-2xl overflow-hidden border border-slate-200 shadow-sm my-6 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950">
+  <div className="px-6 py-20 text-center">
+    <div className="font-bold text-white/90 mb-10">✷ Lumen</div>
+
+    <span className="inline-block text-xs font-semibold tracking-wide text-emerald-300 bg-emerald-400/10 border border-emerald-400/20 px-3 py-1 rounded-full mb-6">Launching Q3 · 2,400 on the list</span>
+
+    <h2 className="text-4xl sm:text-5xl font-extrabold text-white leading-tight max-w-2xl mx-auto">The inbox that writes back</h2>
+    <p className="text-lg text-slate-300 mt-5 max-w-lg mx-auto">Lumen drafts, sorts, and schedules so you touch email twice a day. Be first in line.</p>
+
+    {/* Email capture — single field */}
+    <div className="mt-9 max-w-md mx-auto">
+      <div className="flex flex-col sm:flex-row gap-2 p-1.5 bg-white/10 rounded-2xl border border-white/10">
+        <input disabled placeholder="you@work.com" className="flex-1 bg-transparent text-white placeholder-slate-400 px-4 py-3 outline-none" />
+        <button className="bg-emerald-400 text-slate-900 font-bold px-6 py-3 rounded-xl whitespace-nowrap">Get early access</button>
+      </div>
+      <p className="text-xs text-slate-400 mt-3">⚡ Founding members get 50% off for life.</p>
+    </div>
+
+    {/* Avatars / social proof */}
+    <div className="flex items-center justify-center gap-3 mt-10">
+      <div className="flex -space-x-2">
+        {["bg-rose-400","bg-amber-400","bg-sky-400","bg-violet-400","bg-emerald-400"].map(c => (
+          <div key={c} className={`w-8 h-8 rounded-full border-2 border-slate-900 ${c}`} />
+        ))}
+      </div>
+      <span className="text-sm text-slate-300">+2,400 people waiting</span>
+    </div>
+  </div>
+</div>
+
+## Why it converts
+
+<Callout type="success" title="Friction is the enemy here">
+Cold traffic won't read. So the page asks for <strong>one thing</strong> (email),
+shows <strong>one promise</strong>, and adds a <strong>reason to act now</strong>
+("50% off for life" + a live counter). The counter doubles as social proof and
+scarcity. Dark, high-contrast design keeps the single CTA unmissable.
+</Callout>
+
+| Element | Conversion job |
+| --- | --- |
+| Email-only field | Lowest-possible commitment |
+| Live signup counter | Social proof + FOMO in one number |
+| "Founding members 50% off" | Incentive to act now, not later |
+| No nav, no footer links | Zero exits — one path forward |
+
+<Callout type="warning" title="The one rule">
+A lead-magnet page should have <strong>no navigation</strong>. Every link that
+isn't the CTA is a leak. Notice this mockup has none.
+</Callout>
+
+[← All variants](/2026-06-08-landing-pages/01-overview) · [Next: Long-form sales →](/2026-06-08-landing-pages/04-sales-longform)

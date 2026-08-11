@@ -1,0 +1,55 @@
+---
+title: Two-rail navigation
+---
+
+# 🧭 Left rail = sessions, right rail = responses
+
+Look around the page you're on right now:
+
+- **Left rail** lists every **session** (newest first), with date + response
+  count. The active session is highlighted. Click one to jump to its first
+  response.
+- **Right rail** lists the **responses inside the current session**, in order,
+  with the active one highlighted. This is how you switch between responses.
+- **Center** is the pane content.
+
+<Callout type="success" title="Try it">
+This is response <strong>05</strong> — you should see it highlighted in the
+right rail, under <em>Astro Exploration</em> in the left rail.
+</Callout>
+
+## How it's built
+
+One shared helper feeds everything, so the rails never drift from the content:
+
+<Mermaid chart={`flowchart LR
+  C[("content/panes/**")] --> L["lib/panes.ts<br/>getSessions()"]
+  L --> SH["layouts/Shell.astro"]
+  SH --> LR["left rail · sessions"]
+  SH --> RR["right rail · responses (active session)"]
+  SH --> M["center · the pane"]
+`} />
+
+| Piece | Role |
+| --- | --- |
+| `lib/panes.ts` | builds the session→responses tree once, reused everywhere |
+| `layouts/Shell.astro` | the two-rail chrome; takes an `activeId` to highlight |
+| `pages/[...slug].astro` | renders a pane inside `Shell`, passing its id |
+| `pages/index.astro` | overview (accordion) inside the same `Shell` |
+
+<Callout type="info" title="Zero-JS navigation">
+Both rails are plain server-rendered links — no island, no client JS. They're
+sticky and scroll independently. Only genuinely interactive things (charts,
+mermaid, the index accordion) ship JavaScript.
+</Callout>
+
+## Responsive note
+
+Below `lg` the right rail hides; below `md` the left rail hides too — the center
+content always stays readable. A mobile drawer/toggle is a later refinement if
+we want the rails on small screens.
+
+---
+
+*This pane:
+`content/panes/2026-06-02-astro-exploration/05-navigation.mdx`*

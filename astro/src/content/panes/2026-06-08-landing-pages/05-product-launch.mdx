@@ -1,0 +1,74 @@
+---
+title: Product-launch / urgency landing page
+---
+
+# ⏰ Variant 4 — Product launch / urgency
+
+<div className="not-prose rounded-2xl overflow-hidden border border-slate-200 shadow-sm my-6 bg-gradient-to-b from-rose-600 to-rose-700">
+  <div className="px-6 py-14 text-center">
+    <span className="inline-block text-xs font-bold tracking-widest text-rose-700 bg-white px-3 py-1 rounded-full mb-6">LAUNCH WEEK ONLY</span>
+    <h2 className="text-4xl font-extrabold text-white max-w-2xl mx-auto leading-tight">The 2026 Creator Toolkit — 60% off</h2>
+    <p className="text-lg text-rose-100 mt-4 max-w-lg mx-auto">Every template, preset, and course we make. One price. Gone Friday.</p>
+
+    {/* Countdown */}
+    <div className="flex justify-center gap-3 mt-8">
+      {[["02","DAYS"],["14","HRS"],["38","MIN"],["09","SEC"]].map(([n,l]) => (
+        <div key={l} className="bg-white/15 backdrop-blur rounded-xl px-4 py-3 w-20">
+          <div className="text-3xl font-extrabold text-white tabular-nums">{n}</div>
+          <div className="text-[10px] tracking-widest text-rose-100 mt-1">{l}</div>
+        </div>
+      ))}
+    </div>
+
+    {/* Offer / price */}
+    <div className="mt-9 inline-flex items-baseline gap-3">
+      <span className="text-rose-200 line-through text-2xl">$499</span>
+      <span className="text-5xl font-extrabold text-white">$199</span>
+    </div>
+
+    <div className="mt-7">
+      <button className="bg-white text-rose-700 font-extrabold text-lg px-10 py-4 rounded-2xl shadow-2xl">Claim the bundle →</button>
+      <p className="text-xs text-rose-100 mt-3">🔥 312 sold today · only 88 bundles left at this price</p>
+    </div>
+  </div>
+
+  {/* What's inside */}
+  <div className="bg-white px-6 py-10">
+    <h3 className="text-center font-bold text-slate-900 text-xl">Everything you get</h3>
+    <div className="grid sm:grid-cols-2 gap-3 max-w-xl mx-auto mt-5">
+      {[["🎨","240 design templates","$180 value"],["🎬","12 video presets","$120 value"],["📚","Full editing course","$149 value"],["🤖","AI caption pack","$50 value"]].map(([i,t,v]) => (
+        <div key={t} className="flex items-center gap-3 rounded-xl border border-slate-100 p-3">
+          <span className="text-2xl">{i}</span>
+          <div><div className="font-semibold text-slate-900 text-sm">{t}</div><div className="text-xs text-emerald-600 font-medium">{v}</div></div>
+        </div>
+      ))}
+    </div>
+    <p className="text-center text-sm text-slate-500 mt-5">Total value <span className="line-through">$499</span> — yours for <strong className="text-slate-900">$199</strong> this week.</p>
+    <div className="text-center mt-5">
+      <button className="bg-rose-600 text-white font-bold px-8 py-3 rounded-xl">Claim before Friday</button>
+    </div>
+  </div>
+</div>
+
+## Why it converts
+
+<Callout type="success" title="Urgency + value anchoring">
+For an existing audience the page leans on <strong>scarcity</strong> (countdown,
+"88 left") and <strong>price anchoring</strong> (struck-through $499 → $199, with
+itemized "value" totaling far more than the price). Live counters ("312 sold
+today") manufacture momentum. The deadline forces the decision <em>now</em>.
+</Callout>
+
+| Element | Conversion job |
+| --- | --- |
+| Countdown timer | Hard deadline → acts now, not "later" |
+| Struck-through anchor price | Makes $199 feel like a steal |
+| Itemized value stack | Justifies the price with math |
+| "88 left / 312 sold today" | Scarcity + social momentum |
+
+<Callout type="warning" title="Use honestly">
+Fake countdowns and ever-resetting "X left" counters torch trust (and in some
+places are illegal). Scarcity converts hardest when it's <strong>real</strong>.
+</Callout>
+
+[← All variants](/2026-06-08-landing-pages/01-overview)
